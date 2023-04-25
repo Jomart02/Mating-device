@@ -30,3 +30,41 @@ pause
 Все начальные параметры UDP клиента задаются в полях класса Controller.
 Чтобы поменять порт и айпи контроллера, нужно их задать при объявлении 
 
+
+```C#
+  //Порт контроллера
+  private const int localPort = 5001;
+
+  //Обьявление клиента 
+  private static Socket UDP_CONTROLLER = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+  private static SocketFlags SF = new SocketFlags();
+  private static IPEndPoint LOCAL_IP = new IPEndPoint(IPAddress.Parse("127.0.0.1"), localPort);
+```
+Для изменения айпи и порта устроства отображения данных - менять при объявлении данное поле 
+```C#
+  //Объявление клиента - интерфейса 
+  IPEndPoint END_POINT_INTERFACE = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 5006);
+```
+
+- PORT_SENSOR - порты источников информации 
+- PORT_DEVICE - порты потребителей информации 
+- COMPORT_DEVICE - com порты источников через интерфейс RS
+
+Выбор порта и отправка на все порты ведется автоматически
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
