@@ -1,0 +1,36 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v7.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v7.0": {
+      "SensorTwo/1.0.0": {
+        "dependencies": {
+          "ProtokolLibrary": "1.0.0"
+        },
+        "runtime": {
+          "SensorTwo.dll": {}
+        }
+      },
+      "ProtokolLibrary/1.0.0": {
+        "runtime": {
+          "ProtokolLibraly.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "SensorTwo/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "ProtokolLibrary/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

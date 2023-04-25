@@ -1,0 +1,36 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v7.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v7.0": {
+      "SensorOne/1.0.0": {
+        "dependencies": {
+          "ProtokolLibrary": "1.0.0"
+        },
+        "runtime": {
+          "SensorOne.dll": {}
+        }
+      },
+      "ProtokolLibrary/1.0.0": {
+        "runtime": {
+          "ProtokolLibraly.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "SensorOne/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "ProtokolLibrary/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

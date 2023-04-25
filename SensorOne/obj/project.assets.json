@@ -1,0 +1,90 @@
+{
+  "version": 3,
+  "targets": {
+    "net7.0": {
+      "ProtokolLibrary/1.0.0": {
+        "type": "project",
+        "compile": {
+          "bin/placeholder/ProtokolLibrary.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/ProtokolLibrary.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "ProtokolLibrary/1.0.0": {
+      "type": "project",
+      "path": "../ProtokolLibraly/ProtokolLibrary.csproj",
+      "msbuildProject": "../ProtokolLibraly/ProtokolLibrary.csproj"
+    }
+  },
+  "projectFileDependencyGroups": {
+    "net7.0": [
+      "ProtokolLibrary >= 1.0.0"
+    ]
+  },
+  "packageFolders": {
+    "C:\\Users\\pc1\\.nuget\\packages\\": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "C:\\2022-2023\\EthernetNavigationSystem\\SensorOne\\SensorOne.csproj",
+      "projectName": "SensorOne",
+      "projectPath": "C:\\2022-2023\\EthernetNavigationSystem\\SensorOne\\SensorOne.csproj",
+      "packagesPath": "C:\\Users\\pc1\\.nuget\\packages\\",
+      "outputPath": "C:\\2022-2023\\EthernetNavigationSystem\\SensorOne\\obj\\",
+      "projectStyle": "PackageReference",
+      "configFilePaths": [
+        "C:\\Users\\pc1\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+      ],
+      "originalTargetFrameworks": [
+        "net7.0"
+      ],
+      "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "https://api.nuget.org/v3/index.json": {}
+      },
+      "frameworks": {
+        "net7.0": {
+          "targetAlias": "net7.0",
+          "projectReferences": {
+            "C:\\2022-2023\\EthernetNavigationSystem\\ProtokolLibraly\\ProtokolLibrary.csproj": {
+              "projectPath": "C:\\2022-2023\\EthernetNavigationSystem\\ProtokolLibraly\\ProtokolLibrary.csproj"
+            }
+          }
+        }
+      },
+      "warningProperties": {
+        "warnAsError": [
+          "NU1605"
+        ]
+      }
+    },
+    "frameworks": {
+      "net7.0": {
+        "targetAlias": "net7.0",
+        "imports": [
+          "net461",
+          "net462",
+          "net47",
+          "net471",
+          "net472",
+          "net48",
+          "net481"
+        ],
+        "assetTargetFallback": true,
+        "warn": true,
+        "frameworkReferences": {
+          "Microsoft.NETCore.App": {
+            "privateAssets": "all"
+          }
+        },
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.100\\RuntimeIdentifierGraph.json"
+      }
+    }
+  }
+}
