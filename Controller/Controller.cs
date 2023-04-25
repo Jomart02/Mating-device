@@ -4,8 +4,6 @@ using System.Text;
 using ProtokolLibrary;
 using System.Diagnostics;
 using System.IO.Ports;
-//using static System.Runtime.InteropServices.JavaScript.JSType;
-
 
 namespace NavigationSystem {
 
@@ -33,7 +31,7 @@ namespace NavigationSystem {
 		//Объявление клиента - интерфейса 
 		IPEndPoint END_POINT_INTERFACE = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 5006);
 
-        private Dictionary<string, int> PORT_SENSOR = new Dictionary<string, int>() {
+        private static Dictionary<string, int> PORT_SENSOR = new Dictionary<string, int>() {
            
             { "GGL" , 5005 },
             { "GGA" , 5006 },
@@ -43,16 +41,24 @@ namespace NavigationSystem {
 
         };
 
-        private Dictionary<string, int> PORT_DEVICE = new Dictionary<string, int>() {
+        private static Dictionary<string, int> PORT_DEVICE = new Dictionary<string, int>() {
 
             { "DEV1" , 5011 },
 			{ "DEV2" , 5006 },
         };
 
-        private Dictionary<string, string> COMPORT_DEVICE = new Dictionary<string, string>() {
+
+
+        private static Dictionary<string, string> COMPORT_DEVICE = new Dictionary<string, string>() {
             { "DEV1" , "COM11" },
             { "DEV2" , "COM12" },
         };
+
+        static int SLEEP_SEND = 100;
+
+        
+        
+
 
         static async Task Main(string[] args) {
 
@@ -78,18 +84,18 @@ namespace NavigationSystem {
 
                 while (true) {
 
-                    foreach (var port in DiplomDevice.PORT_DEVICE.Values){
+                    foreach (var port in PORT_DEVICE.Values){
                          //REMOTE_PORT = port;
                          DiplomDevice.SendToReceiversAsync(port);
                         
                     }
 
-                    foreach (var port in DiplomDevice.PORT_SENSOR.Values) {
+                    foreach (var port in PORT_SENSOR.Values) {
                         //REMOTE_PORT = port;
                         DiplomDevice.SendToReceiversAsync(port);
                     }
 
-                    foreach (var comport in DiplomDevice.COMPORT_DEVICE.Values) {
+                    foreach (var comport in COMPORT_DEVICE.Values) {
                         DiplomDevice.ReceiverRSAsync(comport);
 
                     }
@@ -98,8 +104,6 @@ namespace NavigationSystem {
                 }
 
             } catch(Exception e) { }
-
-
         }
 
         protected async Task SendToReceiversAsync(int port) {
@@ -120,7 +124,7 @@ namespace NavigationSystem {
 				
 				Console.ForegroundColor = ConsoleColor.Green;
 				Console.WriteLine("Отправлено: " + PROTOCOL_MESSAGE);
-                Thread.Sleep(100);
+                Thread.Sleep(SLEEP_SEND);
 
             } catch (ArgumentOutOfRangeException ex) {
                 Console.WriteLine("Возникло исключение: " + ex.ToString() + "\n  " + ex.Message);
@@ -147,7 +151,7 @@ namespace NavigationSystem {
 
                     Console.ForegroundColor = ConsoleColor.Blue;
                     Console.WriteLine("Отправлено на интерфейс: " + PROTOCOL_MESSAGE + " " + bytes + "  |||  " + LAST_NMEA_MESSAGE + " " + DateTime.Now + " " + bytes1);
-                    Thread.Sleep(100);
+                    Thread.Sleep(SLEEP_SEND);
 
                 } catch (ArgumentOutOfRangeException ex) {
                     Console.WriteLine("Возникло исключение: " + ex.ToString() + "\n  " + ex.Message);
@@ -228,8 +232,13 @@ namespace NavigationSystem {
                     var result = await UDP_CONTROLLER.ReceiveFromAsync(ReceiveBytes, SocketFlags.None , RemoteIpEndPoint);
                     var Message = Encoding.ASCII.GetString(ReceiveBytes, 0, result.ReceivedBytes);
 
+
+                    if (Message.Contains("CUSPP")) {
+                        CheckCommand(Message);
+                        continue;
+                    }
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Принято: ================================================================================================================================================================ " + Message);
+                    Console.WriteLine("Принято:  " + Message);
 
                     LAST_NMEA_MESSAGE = Message;
                     PROTOCOL_MESSAGE = MESSAGE.GetMessage(Message);
@@ -239,6 +248,36 @@ namespace NavigationSystem {
             }
         }
 
+
+        protected void CheckCommand(string CommandMessage) {
+
+
+            string data = FormattingDate(CommandMessage);//Получение только данных из сообщения
+
+            List<string> data_mas = new List<string>(data.Split(','));//Получаю массив данных 
+
+            for(int i = 0;i<data_mas.Count;i++) {
+                
+                switch (data_mas[i]) {
+                    case "FREQ":
+                        SLEEP_SEND = Convert.ToInt32( data_mas[i + 1] );
+                    break;
+
+                }
+            }
+        }
+
+
+        protected string FormattingDate(string NMEAmes) {
+
+
+            int startsum = (NMEAmes.IndexOf('$') + 7);
+            int length = (NMEAmes.Length - 10);
+
+            NMEAmes = NMEAmes.Substring(startsum, length);
+
+            return NMEAmes;
+        }
     }
 
 }
