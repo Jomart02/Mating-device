@@ -25,7 +25,7 @@ pause
 Для работы программы должны быть установлены [.NET 7.0 и .NET Framework 4.7](https://dotnet.microsoft.com/en-us/download/visual-studio-sdks)
 
 
-##Программа Controller
+## Программа Controller
 
 Все начальные параметры UDP клиента задаются в полях класса Controller.
 Чтобы поменять порт и айпи контроллера, нужно их задать при объявлении 
