@@ -32,6 +32,7 @@ namespace NavigationSystem {
 		
 		//Объявление клиента - интерфейса 
 		IPEndPoint END_POINT_INTERFACE = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 5006);
+
         private Dictionary<string, int> PORT_SENSOR = new Dictionary<string, int>() {
            
             { "GGL" , 5005 },
@@ -43,6 +44,7 @@ namespace NavigationSystem {
         };
 
         private Dictionary<string, int> PORT_DEVICE = new Dictionary<string, int>() {
+
             { "DEV1" , 5011 },
 			{ "DEV2" , 5006 },
         };
@@ -63,15 +65,13 @@ namespace NavigationSystem {
 
                 UDP_CONTROLLER.Bind(LOCAL_IP);
 
-              
-
                 //Поток для прослушивания Com портов
                 /*Thread COMReceive = new Thread(DiplomDevice.ReceiverRS);
                 COMReceive.Start();
 */
                 //Асинхронный поток для прослушивания Ethernet 
                 Task.Run(() => DiplomDevice.ReceiverEthernetAsync());
-                //Асинхронный поток для отправки сообщений Ethernet 
+                //Асинхронный поток для отправки сообщений Ethernet  на интерфейс
                 Task.Run(() => DiplomDevice.SendToInterfaceAsync());
 
 
@@ -81,11 +81,17 @@ namespace NavigationSystem {
                     foreach (var port in DiplomDevice.PORT_DEVICE.Values){
                          //REMOTE_PORT = port;
                          DiplomDevice.SendToReceiversAsync(port);
+                        
                     }
 
+                    foreach (var port in DiplomDevice.PORT_SENSOR.Values) {
+                        //REMOTE_PORT = port;
+                        DiplomDevice.SendToReceiversAsync(port);
+                    }
 
                     foreach (var comport in DiplomDevice.COMPORT_DEVICE.Values) {
                         DiplomDevice.ReceiverRSAsync(comport);
+
                     }
 					
                     //Thread.Sleep(10);
@@ -113,7 +119,8 @@ namespace NavigationSystem {
                 await UDP_CONTROLLER.SendToAsync(ByteProtocolMessage, endPoint);
 				
 				Console.ForegroundColor = ConsoleColor.Green;
-				Console.WriteLine("Отправлено: " + PROTOCOL_MESSAGE);				
+				Console.WriteLine("Отправлено: " + PROTOCOL_MESSAGE);
+                Thread.Sleep(100);
 
             } catch (ArgumentOutOfRangeException ex) {
                 Console.WriteLine("Возникло исключение: " + ex.ToString() + "\n  " + ex.Message);
@@ -140,8 +147,7 @@ namespace NavigationSystem {
 
                     Console.ForegroundColor = ConsoleColor.Blue;
                     Console.WriteLine("Отправлено на интерфейс: " + PROTOCOL_MESSAGE + " " + bytes + "  |||  " + LAST_NMEA_MESSAGE + " " + DateTime.Now + " " + bytes1);
-                    Task.Delay(100);
-
+                    Thread.Sleep(100);
 
                 } catch (ArgumentOutOfRangeException ex) {
                     Console.WriteLine("Возникло исключение: " + ex.ToString() + "\n  " + ex.Message);
