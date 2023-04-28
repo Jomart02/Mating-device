@@ -29,7 +29,7 @@ namespace NavigationSystem {
         private static ProtokolMessage MESSAGE = new ProtokolMessage();
 		
 		//Объявление клиента - интерфейса 
-		IPEndPoint END_POINT_INTERFACE = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 5006);
+		IPEndPoint END_POINT_INTERFACE = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 5002);
 
         private static Dictionary<string, int> PORT_SENSOR = new Dictionary<string, int>() {
            
@@ -44,20 +44,25 @@ namespace NavigationSystem {
         private static Dictionary<string, int> PORT_DEVICE = new Dictionary<string, int>() {
 
             { "DEV1" , 5011 },
-			{ "DEV2" , 5006 },
+			{ "DEV2" , 5012 },
+            { "DEV3" , 5013 },
+            { "DEV4" , 5014 },
+            { "DEV5" , 5015 }
         };
 
 
 
         private static Dictionary<string, string> COMPORT_DEVICE = new Dictionary<string, string>() {
-            { "DEV1" , "COM11" },
-            { "DEV2" , "COM12" },
+            { "COMDEV1" , "COM11" },
+            { "COMDEV2" , "COM12" },
+            { "COMDEV3" , "COM13" },
+            { "COMDEV4" , "COM14" },
+            { "COMDEV5" , "COM15" }
         };
 
         static int SLEEP_SEND = 100;
-
-        
-        
+        static int SLEEP_SEND_INTERFACE = 100;
+        static int SLEEP_RS = 100;
 
 
         static async Task Main(string[] args) {
@@ -72,9 +77,9 @@ namespace NavigationSystem {
                 UDP_CONTROLLER.Bind(LOCAL_IP);
 
                 //Поток для прослушивания Com портов
-                /*Thread COMReceive = new Thread(DiplomDevice.ReceiverRS);
+                Thread COMReceive = new Thread(DiplomDevice.ReceiverRS);
                 COMReceive.Start();
-*/
+
                 //Асинхронный поток для прослушивания Ethernet 
                 Task.Run(() => DiplomDevice.ReceiverEthernetAsync());
                 //Асинхронный поток для отправки сообщений Ethernet  на интерфейс
@@ -95,12 +100,12 @@ namespace NavigationSystem {
                         DiplomDevice.SendToReceiversAsync(port);
                     }
 
-                    foreach (var comport in COMPORT_DEVICE.Values) {
+                   /* foreach (var comport in COMPORT_DEVICE.Values) {
                         DiplomDevice.ReceiverRSAsync(comport);
 
-                    }
+                    }*/
 					
-                    //Thread.Sleep(10);
+                    Thread.Sleep(SLEEP_SEND);
                 }
 
             } catch(Exception e) { }
@@ -151,7 +156,7 @@ namespace NavigationSystem {
 
                     Console.ForegroundColor = ConsoleColor.Blue;
                     Console.WriteLine("Отправлено на интерфейс: " + PROTOCOL_MESSAGE + " " + bytes + "  |||  " + LAST_NMEA_MESSAGE + " " + DateTime.Now + " " + bytes1);
-                    Thread.Sleep(SLEEP_SEND);
+                    Thread.Sleep(SLEEP_SEND_INTERFACE);
 
                 } catch (ArgumentOutOfRangeException ex) {
                     Console.WriteLine("Возникло исключение: " + ex.ToString() + "\n  " + ex.Message);
@@ -192,28 +197,36 @@ namespace NavigationSystem {
             }
         }
 
-        protected async void ReceiverRSAsync(string port) {
+        protected async void ReceiverRS() {
 
-           
-                try {
 
-                    var isValid = SerialPort.GetPortNames().Any(x => string.Compare(x, port, true) == 0);
-                    if (!isValid)
-                        throw new System.IO.IOException(string.Format("{0} port was not found", port));
-                    else {
-                        SerialPort comport = new SerialPort(port);
-                        comport.Open();
-                        await Task.Delay(10);
-                        // Читаем данные из каждого порта
-                        string data1 = comport.ReadLine();
-                        Console.WriteLine(data1);
-                        PROTOCOL_MESSAGE = MESSAGE.GetMessage(data1);
-                        LAST_NMEA_MESSAGE = data1;
-                        comport.Close();
-                    }
 
-                } catch (Exception ex) { Console.WriteLine(ex.Message); }
-            
+            while (true) {
+
+                foreach (var port in COMPORT_DEVICE.Values) {
+
+                    try {
+
+                        var isValid = SerialPort.GetPortNames().Any(x => string.Compare(x, port, true) == 0);
+                        if (!isValid)
+                            throw new System.IO.IOException(string.Format("{0} port was not found", port));
+                        else {
+                            SerialPort comport = new SerialPort(port);
+                            comport.Open();
+                            await Task.Delay(10);
+                            // Читаем данные из каждого порта
+                            string data1 = comport.ReadLine();
+                            Console.WriteLine(data1);
+                            PROTOCOL_MESSAGE = MESSAGE.GetMessage(data1);
+                            LAST_NMEA_MESSAGE = data1;
+                            comport.Close();
+                        }
+
+                    } catch (Exception ex) { Console.WriteLine(ex.Message); }
+
+                }
+                Thread.Sleep(SLEEP_RS);
+            }
         }
 
         protected async Task ReceiverEthernetAsync() {
