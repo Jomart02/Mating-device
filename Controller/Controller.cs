@@ -13,23 +13,23 @@ namespace NavigationSystem {
 
         //Инфрмация об удаленных портах 
         private static IPAddress REMOTE_IP_ADDRESS = IPAddress.Parse("127.0.0.1");
-        private static int REMOTE_PORT;
-
+        
         //Порт контроллера
         private const int localPort = 5001;
 
         //Обьявление клиента 
         private static Socket UDP_CONTROLLER = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-        private static SocketFlags SF = new SocketFlags();
+        //private static SocketFlags SF = new SocketFlags();
         private static IPEndPoint LOCAL_IP = new IPEndPoint(IPAddress.Parse("127.0.0.1"), localPort);
 
         private static string PROTOCOL_MESSAGE = "$MDRND,000000.00,000000,0000.0000,N,00000.0000,E,000.0,N,00.0,K,000.0*73"; //-стандартное сообщение 
-        private static string LAST_NMEA_MESSAGE = "====";
-        private static string LAST_NMEA_DATA = "";
+        private static string LAST_ETHERNET_MESSAGE = "====";
+        private static string LAST_RS_MESSAGE = "====";
+        
         private static ProtokolMessage MESSAGE = new ProtokolMessage();
 		
 		//Объявление клиента - интерфейса 
-		IPEndPoint END_POINT_INTERFACE = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 5002);
+		IPEndPoint END_POINT_INTERFACE = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 5006);
 
         private static Dictionary<string, int> PORT_SENSOR = new Dictionary<string, int>() {
            
@@ -77,7 +77,7 @@ namespace NavigationSystem {
                 UDP_CONTROLLER.Bind(LOCAL_IP);
 
                 //Поток для прослушивания Com портов
-                Thread COMReceive = new Thread(DiplomDevice.ReceiverRS);
+                Thread COMReceive = new Thread(DiplomDevice.ReceiverAndSendRS);
                 COMReceive.Start();
 
                 //Асинхронный поток для прослушивания Ethernet 
@@ -91,13 +91,13 @@ namespace NavigationSystem {
 
                     foreach (var port in PORT_DEVICE.Values){
                          //REMOTE_PORT = port;
-                         DiplomDevice.SendToReceiversAsync(port);
+                         await DiplomDevice.SendToReceiversAsync(port);
                         
                     }
 
                     foreach (var port in PORT_SENSOR.Values) {
                         //REMOTE_PORT = port;
-                        DiplomDevice.SendToReceiversAsync(port);
+                        await DiplomDevice.SendToReceiversAsync(port);
                     }
 
                    /* foreach (var comport in COMPORT_DEVICE.Values) {
@@ -129,7 +129,7 @@ namespace NavigationSystem {
 				
 				Console.ForegroundColor = ConsoleColor.Green;
 				Console.WriteLine("Отправлено: " + PROTOCOL_MESSAGE);
-                Thread.Sleep(SLEEP_SEND);
+               // Thread.Sleep(SLEEP_SEND);
 
             } catch (ArgumentOutOfRangeException ex) {
                 Console.WriteLine("Возникло исключение: " + ex.ToString() + "\n  " + ex.Message);
@@ -148,14 +148,17 @@ namespace NavigationSystem {
                 try {
 
                     byte[] ByteProtocolMessage = Encoding.ASCII.GetBytes(PROTOCOL_MESSAGE);
-                    byte[] ByteNMEAMessage = Encoding.ASCII.GetBytes(LAST_NMEA_MESSAGE + " " + DateTime.Now);
+                    byte[] ByteEthernetMessage = Encoding.ASCII.GetBytes(LAST_ETHERNET_MESSAGE + " " + DateTime.Now);
+                    byte[] ByteRSMessage = Encoding.ASCII.GetBytes(LAST_RS_MESSAGE + " " + DateTime.Now);
 
                     //отправка на интерфейс постоянно 
                     int bytes = await UDP_CONTROLLER.SendToAsync(ByteProtocolMessage, END_POINT_INTERFACE);
-                    int bytes1 = await UDP_CONTROLLER.SendToAsync(ByteNMEAMessage, END_POINT_INTERFACE);
+                    int bytes1 = await UDP_CONTROLLER.SendToAsync(ByteEthernetMessage, END_POINT_INTERFACE);
+                    int bytes2 = await UDP_CONTROLLER.SendToAsync(ByteEthernetMessage, END_POINT_INTERFACE);
+
 
                     Console.ForegroundColor = ConsoleColor.Blue;
-                    Console.WriteLine("Отправлено на интерфейс: " + PROTOCOL_MESSAGE + " " + bytes + "  |||  " + LAST_NMEA_MESSAGE + " " + DateTime.Now + " " + bytes1);
+                    Console.WriteLine("Отправлено на интерфейс: " + PROTOCOL_MESSAGE + " " + bytes + "  |||  " + LAST_ETHERNET_MESSAGE + " " + DateTime.Now + " " + bytes1);
                     Thread.Sleep(SLEEP_SEND_INTERFACE);
 
                 } catch (ArgumentOutOfRangeException ex) {
@@ -189,7 +192,7 @@ namespace NavigationSystem {
 					Console.ForegroundColor = ConsoleColor.Red;
 					Console.WriteLine("Принято: " + Message);
 				
-                    LAST_NMEA_MESSAGE= Message;
+                    LAST_ETHERNET_MESSAGE = Message;
                     PROTOCOL_MESSAGE = MESSAGE.GetMessage(Message);
 	
                 } catch (Exception ex) {}
@@ -197,34 +200,41 @@ namespace NavigationSystem {
             }
         }
 
-        protected async void ReceiverRS() {
+        protected void ReceiverAndSendRS() {
 
 
 
             while (true) {
 
+                //Счетчик по каждому COM - порту
                 foreach (var port in COMPORT_DEVICE.Values) {
 
                     try {
 
+
+                        //Проверка работоспособности выбранного порта
                         var isValid = SerialPort.GetPortNames().Any(x => string.Compare(x, port, true) == 0);
                         if (!isValid)
-                            throw new System.IO.IOException(string.Format("{0} port was not found", port));
+                            throw new System.IO.IOException(string.Format("{0} port was not found", port));//Информация - что порт закрыт
                         else {
                             SerialPort comport = new SerialPort(port);
                             comport.Open();
-                            await Task.Delay(10);
-                            // Читаем данные из каждого порта
+                            
+                            // Читаем данные из открытого порта 
                             string data1 = comport.ReadLine();
                             Console.WriteLine(data1);
                             PROTOCOL_MESSAGE = MESSAGE.GetMessage(data1);
-                            LAST_NMEA_MESSAGE = data1;
+                            LAST_RS_MESSAGE = data1;
+                            //передаем данные оконечномоу устройству 
+                            comport.WriteLine(PROTOCOL_MESSAGE);
+                            //закрываем порт для работы без ошибок 
                             comport.Close();
                         }
 
                     } catch (Exception ex) { Console.WriteLine(ex.Message); }
 
                 }
+                //Задержка на чтение и отправку 
                 Thread.Sleep(SLEEP_RS);
             }
         }
@@ -253,7 +263,7 @@ namespace NavigationSystem {
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Принято:  " + Message);
 
-                    LAST_NMEA_MESSAGE = Message;
+                    LAST_ETHERNET_MESSAGE = Message;
                     PROTOCOL_MESSAGE = MESSAGE.GetMessage(Message);
 
                 } catch (Exception ex) { }
