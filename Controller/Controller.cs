@@ -50,14 +50,20 @@ namespace NavigationSystem {
             { "DEV5" , 5015 }
         };
 
-
-
-        private static Dictionary<string, string> COMPORT_DEVICE = new Dictionary<string, string>() {
+        private static Dictionary<string, string> COMPORT_DEVICE_OUTPUT = new Dictionary<string, string>() {
             { "COMDEV1" , "COM11" },
             { "COMDEV2" , "COM12" },
             { "COMDEV3" , "COM13" },
             { "COMDEV4" , "COM14" },
             { "COMDEV5" , "COM15" }
+        };
+
+        private static Dictionary<string, string> COMPORT_DEVICE_INPUT = new Dictionary<string, string>() {
+            { "COMDEV6" ,   "COM16" },
+            { "COMDEV7" ,   "COM17" },
+            { "COMDEV8" ,   "COM18" },
+            { "COMDEV9" ,   "COM19" },
+            { "COMDEV10" ,  "COM20" }
         };
 
         static int SLEEP_SEND = 100;
@@ -77,8 +83,11 @@ namespace NavigationSystem {
                 UDP_CONTROLLER.Bind(LOCAL_IP);
 
                 //Поток для прослушивания Com портов
-                Thread COMReceive = new Thread(DiplomDevice.ReceiverAndSendRS);
+                Thread COMReceive = new Thread(DiplomDevice.ReceiverRS);
                 COMReceive.Start();
+                //Поток для отправки сообщений Com портам
+                Thread COMSend = new Thread(DiplomDevice.SendToRS);
+                COMSend.Start();
 
                 //Асинхронный поток для прослушивания Ethernet 
                 Task.Run(() => DiplomDevice.ReceiverEthernetAsync());
@@ -111,6 +120,7 @@ namespace NavigationSystem {
             } catch(Exception e) { }
         }
 
+        #region Модуль отправки сообщений по Ethernet 
         protected async Task SendToReceiversAsync(int port) {
 
             // Создаем endPoint по информации об удаленном хосте девайсов
@@ -123,12 +133,16 @@ namespace NavigationSystem {
             try {
 
                 byte[] ByteProtocolMessage = Encoding.ASCII.GetBytes(PROTOCOL_MESSAGE);
-        	
-				//Отправка на нужные источники и устройства 
+                byte[] ByteEthernetMessage = Encoding.ASCII.GetBytes(LAST_ETHERNET_MESSAGE);
+                byte[] ByteRSMessage = Encoding.ASCII.GetBytes(LAST_RS_MESSAGE);
+
+                //Отправка на нужные источники и устройства 
                 await UDP_CONTROLLER.SendToAsync(ByteProtocolMessage, endPoint);
-				
-				Console.ForegroundColor = ConsoleColor.Green;
-				Console.WriteLine("Отправлено: " + PROTOCOL_MESSAGE);
+                await UDP_CONTROLLER.SendToAsync(ByteEthernetMessage, endPoint);
+                await UDP_CONTROLLER.SendToAsync(ByteRSMessage, endPoint);
+
+                Console.ForegroundColor = ConsoleColor.Green;
+				Console.WriteLine("Отправлено: " + PROTOCOL_MESSAGE );
                // Thread.Sleep(SLEEP_SEND);
 
             } catch (ArgumentOutOfRangeException ex) {
@@ -148,13 +162,13 @@ namespace NavigationSystem {
                 try {
 
                     byte[] ByteProtocolMessage = Encoding.ASCII.GetBytes(PROTOCOL_MESSAGE);
-                    byte[] ByteEthernetMessage = Encoding.ASCII.GetBytes(LAST_ETHERNET_MESSAGE + " " + DateTime.Now);
-                    byte[] ByteRSMessage = Encoding.ASCII.GetBytes(LAST_RS_MESSAGE + " " + DateTime.Now);
+                    byte[] ByteEthernetMessage = Encoding.ASCII.GetBytes(LAST_ETHERNET_MESSAGE + " |Time send " + DateTime.Now);
+                    byte[] ByteRSMessage = Encoding.ASCII.GetBytes(LAST_RS_MESSAGE + " |Time send " + DateTime.Now);
 
                     //отправка на интерфейс постоянно 
                     int bytes = await UDP_CONTROLLER.SendToAsync(ByteProtocolMessage, END_POINT_INTERFACE);
                     int bytes1 = await UDP_CONTROLLER.SendToAsync(ByteEthernetMessage, END_POINT_INTERFACE);
-                    int bytes2 = await UDP_CONTROLLER.SendToAsync(ByteEthernetMessage, END_POINT_INTERFACE);
+                    int bytes2 = await UDP_CONTROLLER.SendToAsync(ByteRSMessage, END_POINT_INTERFACE);
 
 
                     Console.ForegroundColor = ConsoleColor.Blue;
@@ -168,50 +182,18 @@ namespace NavigationSystem {
                 }
             }
         }
+        #endregion
 
-        protected void Receiver() {
+        #region Модуль отправки и приема сообщений через COM порт
 
-
-            byte[] ReceiveBytes = new byte[512];
-
-            //Получаем пришедшие IP с прослушивания 
-            EndPoint RemoteIpEndPoint = (EndPoint)LOCAL_IP;
-            
-
-            Console.WriteLine("\n-----------Получение сообщений-----------");
-            while (true) {
-                try {
-
-                    int size = UDP_CONTROLLER.ReceiveFrom(ReceiveBytes, ref RemoteIpEndPoint);
-                    //Выделение памяти для принятого сообщения
-                    byte[] DataBytes = new byte[size];
-                    for (int i = 0; i < size; i++) DataBytes[i] = ReceiveBytes[i]; 
-                    
-                    string Message = Encoding.ASCII.GetString(DataBytes);
-					
-					Console.ForegroundColor = ConsoleColor.Red;
-					Console.WriteLine("Принято: " + Message);
-				
-                    LAST_ETHERNET_MESSAGE = Message;
-                    PROTOCOL_MESSAGE = MESSAGE.GetMessage(Message);
-	
-                } catch (Exception ex) {}
-
-            }
-        }
-
-        protected void ReceiverAndSendRS() {
-
-
+        protected void ReceiverRS() {
 
             while (true) {
 
                 //Счетчик по каждому COM - порту
-                foreach (var port in COMPORT_DEVICE.Values) {
+                foreach (var port in COMPORT_DEVICE_OUTPUT.Values) {
 
                     try {
-
-
                         //Проверка работоспособности выбранного порта
                         var isValid = SerialPort.GetPortNames().Any(x => string.Compare(x, port, true) == 0);
                         if (!isValid)
@@ -223,10 +205,9 @@ namespace NavigationSystem {
                             // Читаем данные из открытого порта 
                             string data1 = comport.ReadLine();
                             Console.WriteLine(data1);
+                            //Формируем информационное сообщение и сохраняем пришедшие данные 
                             PROTOCOL_MESSAGE = MESSAGE.GetMessage(data1);
                             LAST_RS_MESSAGE = data1;
-                            //передаем данные оконечномоу устройству 
-                            comport.WriteLine(PROTOCOL_MESSAGE);
                             //закрываем порт для работы без ошибок 
                             comport.Close();
                         }
@@ -238,6 +219,45 @@ namespace NavigationSystem {
                 Thread.Sleep(SLEEP_RS);
             }
         }
+
+        protected void SendToRS() {
+
+            while (true) {
+
+                //Счетчик по каждому COM - порту
+                foreach (var port in COMPORT_DEVICE_INPUT.Values) {
+
+                    try {
+
+
+                        //Проверка работоспособности выбранного порта
+                        var isValid = SerialPort.GetPortNames().Any(x => string.Compare(x, port, true) == 0);
+                        if (!isValid)
+                            throw new System.IO.IOException(string.Format("{0} port was not found", port));//Информация - что порт закрыт
+                        else {
+                            SerialPort comport = new SerialPort(port);
+                            comport.Open();
+
+                            //передаем данные оконечномоу устройству 
+                            comport.WriteLine(PROTOCOL_MESSAGE);
+                            comport.WriteLine(LAST_ETHERNET_MESSAGE);
+                            comport.WriteLine(LAST_RS_MESSAGE);
+
+                            //закрываем порт для работы без ошибок 
+                            comport.Close();
+                        }
+
+                    } catch (Exception ex) { Console.WriteLine(ex.Message); }
+
+                }
+                //Задержка на чтение и отправку 
+                Thread.Sleep(SLEEP_RS);
+            }
+        }
+
+        #endregion
+
+        #region Модуль приема сообщений по Ethernet 
 
         protected async Task ReceiverEthernetAsync() {
 
@@ -271,6 +291,9 @@ namespace NavigationSystem {
             }
         }
 
+        #endregion
+
+        #region Модуль проверки и настройки контроллера 
 
         protected void CheckCommand(string CommandMessage) {
 
@@ -301,6 +324,9 @@ namespace NavigationSystem {
 
             return NMEAmes;
         }
+
+        #endregion
+
     }
 
 }
