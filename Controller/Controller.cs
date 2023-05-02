@@ -121,6 +121,11 @@ namespace NavigationSystem {
         }
 
         #region Модуль отправки сообщений по Ethernet 
+        /// <summary>
+        /// Метод для отправки информационного и последнего поступившего сообщения на определенный порт 
+        /// </summary>
+        /// <param name="port">Порт UDP оконечного устройства</param>
+        /// <returns></returns>
         protected async Task SendToReceiversAsync(int port) {
 
             // Создаем endPoint по информации об удаленном хосте девайсов
@@ -135,14 +140,14 @@ namespace NavigationSystem {
                 byte[] ByteProtocolMessage = Encoding.ASCII.GetBytes(PROTOCOL_MESSAGE);
                 byte[] ByteEthernetMessage = Encoding.ASCII.GetBytes(LAST_ETHERNET_MESSAGE);
                 byte[] ByteRSMessage = Encoding.ASCII.GetBytes(LAST_RS_MESSAGE);
-
+                
                 //Отправка на нужные источники и устройства 
-                await UDP_CONTROLLER.SendToAsync(ByteProtocolMessage, endPoint);
+                int bytes  = await UDP_CONTROLLER.SendToAsync(ByteProtocolMessage, endPoint);
                 await UDP_CONTROLLER.SendToAsync(ByteEthernetMessage, endPoint);
                 await UDP_CONTROLLER.SendToAsync(ByteRSMessage, endPoint);
 
                 Console.ForegroundColor = ConsoleColor.Green;
-				Console.WriteLine("Отправлено: " + PROTOCOL_MESSAGE );
+				Console.WriteLine("Отправлено: " + PROTOCOL_MESSAGE + "   " + bytes );
                // Thread.Sleep(SLEEP_SEND);
 
             } catch (ArgumentOutOfRangeException ex) {
@@ -164,7 +169,7 @@ namespace NavigationSystem {
                     byte[] ByteProtocolMessage = Encoding.ASCII.GetBytes(PROTOCOL_MESSAGE);
                     byte[] ByteEthernetMessage = Encoding.ASCII.GetBytes(LAST_ETHERNET_MESSAGE + " |Time send " + DateTime.Now);
                     byte[] ByteRSMessage = Encoding.ASCII.GetBytes(LAST_RS_MESSAGE + " |Time send " + DateTime.Now);
-
+                    
                     //отправка на интерфейс постоянно 
                     int bytes = await UDP_CONTROLLER.SendToAsync(ByteProtocolMessage, END_POINT_INTERFACE);
                     int bytes1 = await UDP_CONTROLLER.SendToAsync(ByteEthernetMessage, END_POINT_INTERFACE);

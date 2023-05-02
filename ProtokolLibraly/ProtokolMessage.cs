@@ -28,7 +28,7 @@ namespace ProtokolLibrary {
                 {   "UNITS_KMPH",       "K"             },  //Единицы измерения - км/ч
                 {   "TRUE_COURSE",      "000.0"         }   //Истинный курс
 
-            };
+        };
 
         //Словарь для фиксации изменения данных => если в пришедшем сообщении и действующем сообщении контроллера данные равны - 
         //если данные старые => индекс == 0
@@ -47,7 +47,7 @@ namespace ProtokolLibrary {
                 {   "UNITS_KMPH",       0               },  //Единицы измерения - км/ч
                 {   "TRUE_COURSE",      0               }   //Истинный курс
             
-            };
+        };
 
         /// <summary>
         /// Метод возвращает сообщение по протоколу контроллера 
@@ -56,16 +56,12 @@ namespace ProtokolLibrary {
         /// <returns></returns>
         public string GetMessage(string NMEA_MES) {
 
+           string CODE = "MDRND"; //Mating Device Required Navigation Data - Сопрягающее Устройство Необходимые Навигационные Данные 
+           string CONTROL_SUM = "";
 
-            string CODE = "MDRND"; //Mating Device Required Navigation Data - Сопрягающее Устройство Необходимые Навигационные Данные 
-            string CONTROL_SUM = "";
+           NMEAReader NmeaMes = new NMEAReader();//создаем объект класса для обработки полученного сообщения
 
-            NMEAReader NmeaMes = new NMEAReader();//создаем объект класса для обработки полученного сообщения
-
-
-            NmeaMes.GetData(NMEA_MES, PROTOCKOL_MESSAGE);//Получить данные из принятых информационных слов и обновить наше сообщение 
-
-
+           NmeaMes.GetData(NMEA_MES, PROTOCKOL_MESSAGE);//Получить данные из принятых информационных слов и обновить наше сообщение 
 
            string SEND_PM = $"{CODE},{PROTOCKOL_MESSAGE["TIME"]},{PROTOCKOL_MESSAGE["DATE"]}," +
                     $"{PROTOCKOL_MESSAGE["LATITUDE"]},{PROTOCKOL_MESSAGE["NS_INDICATOR"]}," +
@@ -94,20 +90,15 @@ namespace ProtokolLibrary {
         /// <param name="NMEA_MES"></param>
         /// <returns></returns>
         internal Dictionary<string,string> GetData(string NMEA_MES ,Dictionary<string , string > PROTOCKOL_MESSAGE) {
-
-
             
             //Все сообщения NMEA из информационного слова 
             List<string> ListMessage = new List<string>();
             ListMessage = SearchMessage(NMEA_MES);
             int count = ListMessage.Count;
             int i = 0;
-
            
-
             //Индефикатор
             string CheckIndef; 
-
 
             while (i<count) {
 
@@ -116,7 +107,7 @@ namespace ProtokolLibrary {
                 
                 string DATA = FormattingDate(ListMessage[i]);//Получение только данных из сообщения
                 
-                List<string> DATA_MAS= new List<string>(DATA.Split(','));//Получаю массив данных 
+                List<string> DATA_MAS = new List<string>(DATA.Split(','));//Получаю массив данных 
                 
                 switch (CheckIndef) {
 
