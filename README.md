@@ -9,14 +9,15 @@
 - Папка SensorTwo – в ней все исходные данные датчика - приемника
 
 ## Запуск программ 
-В каждой папке есть bat файл, который компилирует и запускает программу, в нем нужно изменить путь к файлам csproj и dll выбранной программы.
+В каждой папке есть bat файл, который компилирует и запускает программу, в нем ао желанию можно изменить путь к файлам csproj и dll выбранной программы.
+Запуск произойдет автоматически из любой директории.
 ```
 @echo off
 echo Compiler...
-"C:\Program Files\dotnet\dotnet.exe" build "Менять\Controller.csproj" 
+"dotnet" build "%cd%\Controller.csproj"
 
 echo Start...
-"C:\Program Files\dotnet\dotnet.exe" "менять\Controller\bin\Debug\net7.0\Controller.dll"
+"dotnet" "%cd%\bin\Debug\net7.0\Controller.dll"
 
 echo Done.
 pause
