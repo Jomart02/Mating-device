@@ -14,7 +14,7 @@ namespace NavigationSystem {
 
             try {
                
-                string patch = @"C:\2022-2023\EthernetNavigationSystem\Controller\Config.json";
+                string patch = @"Config.json";
 
                 Controller DiplomDevice = JsonConvert.DeserializeObject<Controller>(File.ReadAllText(patch));
 
