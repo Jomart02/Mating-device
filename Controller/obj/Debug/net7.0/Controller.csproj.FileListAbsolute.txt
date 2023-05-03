@@ -42,3 +42,4 @@ C:\2022-2023\EthernetNavigationSystem\Controller\bin\Debug\net7.0\runtimes\osx-a
 C:\2022-2023\EthernetNavigationSystem\Controller\bin\Debug\net7.0\runtimes\osx-x64\native\libSystem.IO.Ports.Native.dylib
 C:\2022-2023\EthernetNavigationSystem\Controller\bin\Debug\net7.0\runtimes\unix\lib\net7.0\System.IO.Ports.dll
 C:\2022-2023\EthernetNavigationSystem\Controller\bin\Debug\net7.0\runtimes\win\lib\net7.0\System.IO.Ports.dll
+C:\2022-2023\EthernetNavigationSystem\Controller\bin\Debug\net7.0\Newtonsoft.Json.dll

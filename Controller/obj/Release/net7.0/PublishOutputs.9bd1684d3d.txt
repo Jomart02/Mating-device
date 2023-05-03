@@ -1,0 +1,16 @@
+C:\2022-2023\EthernetNavigationSystem\Controller\bin\Release\net7.0\publish\Controller.exe
+C:\2022-2023\EthernetNavigationSystem\Controller\bin\Release\net7.0\publish\Controller.dll
+C:\2022-2023\EthernetNavigationSystem\Controller\bin\Release\net7.0\publish\Controller.deps.json
+C:\2022-2023\EthernetNavigationSystem\Controller\bin\Release\net7.0\publish\Controller.runtimeconfig.json
+C:\2022-2023\EthernetNavigationSystem\Controller\bin\Release\net7.0\publish\Controller.pdb
+C:\2022-2023\EthernetNavigationSystem\Controller\bin\Release\net7.0\publish\Newtonsoft.Json.dll
+C:\2022-2023\EthernetNavigationSystem\Controller\bin\Release\net7.0\publish\System.IO.Ports.dll
+C:\2022-2023\EthernetNavigationSystem\Controller\bin\Release\net7.0\publish\runtimes\linux-arm\native\libSystem.IO.Ports.Native.so
+C:\2022-2023\EthernetNavigationSystem\Controller\bin\Release\net7.0\publish\runtimes\linux-arm64\native\libSystem.IO.Ports.Native.so
+C:\2022-2023\EthernetNavigationSystem\Controller\bin\Release\net7.0\publish\runtimes\linux-x64\native\libSystem.IO.Ports.Native.so
+C:\2022-2023\EthernetNavigationSystem\Controller\bin\Release\net7.0\publish\runtimes\osx-arm64\native\libSystem.IO.Ports.Native.dylib
+C:\2022-2023\EthernetNavigationSystem\Controller\bin\Release\net7.0\publish\runtimes\osx-x64\native\libSystem.IO.Ports.Native.dylib
+C:\2022-2023\EthernetNavigationSystem\Controller\bin\Release\net7.0\publish\runtimes\unix\lib\net7.0\System.IO.Ports.dll
+C:\2022-2023\EthernetNavigationSystem\Controller\bin\Release\net7.0\publish\runtimes\win\lib\net7.0\System.IO.Ports.dll
+C:\2022-2023\EthernetNavigationSystem\Controller\bin\Release\net7.0\publish\ProtokolLibraly.dll
+C:\2022-2023\EthernetNavigationSystem\Controller\bin\Release\net7.0\publish\ProtokolLibraly.pdb

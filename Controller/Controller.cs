@@ -1,124 +1,49 @@
-﻿using System.Net;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Sockets;
+using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using ProtokolLibrary;
-using System.Diagnostics;
 using System.IO.Ports;
+using Newtonsoft.Json;
 
 namespace NavigationSystem {
-
-    class Controller {
-
+    internal class Controller {
         //Стандартные параметры клиента контролерра 
-
-        //Инфрмация об удаленных портах 
-        private static IPAddress REMOTE_IP_ADDRESS = IPAddress.Parse("127.0.0.1");
-        
+        //Локальная сеть ИУС
+        public string CODE = "JSON";
+        //Локальная сеть ИУС на которой контроллер
+        public string CONTROLLER_IP_ADDRESS { get; set; }
         //Порт контроллера
-        private const int localPort = 5001;
+        public int CONTROLLER_PORT { get; set; }
+        // 
+        public string IP_ADDRESS_INTERFACE { get; set; }
+        //Порт интерфейса
+        public int INTERFACE_PORT { get; set; }
 
-        //Обьявление клиента 
-        private static Socket UDP_CONTROLLER = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-        //private static SocketFlags SF = new SocketFlags();
-        private static IPEndPoint LOCAL_IP = new IPEndPoint(IPAddress.Parse("127.0.0.1"), localPort);
+        public string IP_ADDRESS_SENSOR  { get; set; }
+        public Dictionary<string, object[]> IP_PORT_SENSOR = new Dictionary<string, object[]>();
+
+        public string IP_ADDRESS_DEVICE { get; set; }
+        public Dictionary<string, object[]> IP_PORT_DEVICE = new Dictionary<string, object[]>();
+
+        public Dictionary<string, string> COMPORT_DEVICE_OUTPUT = new Dictionary<string, string>();
+        public Dictionary<string, string> COMPORT_DEVICE_INPUT = new Dictionary<string, string>();
+
+        public int SLEEP_SEND  { get; set; }
+        public int SLEEP_SEND_INTERFACE { get; set; }
+        public int SLEEP_RS { get; set; }
+
+        public int SLEEP_SEND_N;
+        public int SLEEP_SEND_INTERFACE_N;
+        public int SLEEP_RS_N;
 
         private static string PROTOCOL_MESSAGE = "$MDRND,000000.00,000000,0000.0000,N,00000.0000,E,000.0,N,00.0,K,000.0*73"; //-стандартное сообщение 
         private static string LAST_ETHERNET_MESSAGE = "====";
         private static string LAST_RS_MESSAGE = "====";
-        
         private static ProtokolMessage MESSAGE = new ProtokolMessage();
-		
-		//Объявление клиента - интерфейса 
-		IPEndPoint END_POINT_INTERFACE = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 5006);
-
-        private static Dictionary<string, int> PORT_SENSOR = new Dictionary<string, int>() {
-           
-            { "GGL" , 5005 },
-            { "GGA" , 5006 },
-            { "RMC" , 5007 },
-            { "VTG" , 5008 },
-            { "ZDA" , 5009 }
-
-        };
-
-        private static Dictionary<string, int> PORT_DEVICE = new Dictionary<string, int>() {
-
-            { "DEV1" , 5011 },
-			{ "DEV2" , 5012 },
-            { "DEV3" , 5013 },
-            { "DEV4" , 5014 },
-            { "DEV5" , 5015 }
-        };
-
-        private static Dictionary<string, string> COMPORT_DEVICE_OUTPUT = new Dictionary<string, string>() {
-            { "COMDEV1" , "COM11" },
-            { "COMDEV2" , "COM12" },
-            { "COMDEV3" , "COM13" },
-            { "COMDEV4" , "COM14" },
-            { "COMDEV5" , "COM15" }
-        };
-
-        private static Dictionary<string, string> COMPORT_DEVICE_INPUT = new Dictionary<string, string>() {
-            { "COMDEV6" ,   "COM16" },
-            { "COMDEV7" ,   "COM17" },
-            { "COMDEV8" ,   "COM18" },
-            { "COMDEV9" ,   "COM19" },
-            { "COMDEV10" ,  "COM20" }
-        };
-
-        static int SLEEP_SEND = 100;
-        static int SLEEP_SEND_INTERFACE = 100;
-        static int SLEEP_RS = 100;
-
-
-        static async Task Main(string[] args) {
-
-            try {
-
-                //Process.Start(@"C:\2022-2023\EthernetNavigationSystem\SensorOne\SensorOne.bat");
-                //Process.Start(@"C:/2022-2023/EthernetNavigationSystem/SensorTwo/bin/Debug/net7.0/SensorTwo.exe");
-
-                Controller DiplomDevice = new Controller();
-
-                UDP_CONTROLLER.Bind(LOCAL_IP);
-
-                //Поток для прослушивания Com портов
-                Thread COMReceive = new Thread(DiplomDevice.ReceiverRS);
-                COMReceive.Start();
-                //Поток для отправки сообщений Com портам
-                Thread COMSend = new Thread(DiplomDevice.SendToRS);
-                COMSend.Start();
-
-                //Асинхронный поток для прослушивания Ethernet 
-                Task.Run(() => DiplomDevice.ReceiverEthernetAsync());
-                //Асинхронный поток для отправки сообщений Ethernet  на интерфейс
-                Task.Run(() => DiplomDevice.SendToInterfaceAsync());
-
-
-
-                while (true) {
-
-                    foreach (var port in PORT_DEVICE.Values){
-                         //REMOTE_PORT = port;
-                         await DiplomDevice.SendToReceiversAsync(port);
-                        
-                    }
-
-                    foreach (var port in PORT_SENSOR.Values) {
-                        //REMOTE_PORT = port;
-                        await DiplomDevice.SendToReceiversAsync(port);
-                    }
-
-                   /* foreach (var comport in COMPORT_DEVICE.Values) {
-                        DiplomDevice.ReceiverRSAsync(comport);
-
-                    }*/
-					
-                    Thread.Sleep(SLEEP_SEND);
-                }
-
-            } catch(Exception e) { }
-        }
 
         #region Модуль отправки сообщений по Ethernet 
         /// <summary>
@@ -126,50 +51,41 @@ namespace NavigationSystem {
         /// </summary>
         /// <param name="port">Порт UDP оконечного устройства</param>
         /// <returns></returns>
-        protected async Task SendToReceiversAsync(int port) {
+        internal async Task SendToReceiversAsync(int port , string IP_ADDRESS , Socket UDP_CONTROLLER) {
 
             // Создаем endPoint по информации об удаленном хосте девайсов
-            IPEndPoint endPoint = new IPEndPoint(REMOTE_IP_ADDRESS, port);
-
-            //Широковещательная рассылка 
-            /* UDP_CONTROLLER.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
-            IPEndPoint endPoint = new IPEndPoint(IPAddress.Broadcast, 27000);*/
-            
+            IPEndPoint endPoint = new IPEndPoint(IPAddress.Parse(IP_ADDRESS), port);
             try {
 
                 byte[] ByteProtocolMessage = Encoding.ASCII.GetBytes(PROTOCOL_MESSAGE);
                 byte[] ByteEthernetMessage = Encoding.ASCII.GetBytes(LAST_ETHERNET_MESSAGE);
                 byte[] ByteRSMessage = Encoding.ASCII.GetBytes(LAST_RS_MESSAGE);
-                
+
                 //Отправка на нужные источники и устройства 
-                int bytes  = await UDP_CONTROLLER.SendToAsync(ByteProtocolMessage, endPoint);
+                int bytes = await UDP_CONTROLLER.SendToAsync(ByteProtocolMessage, endPoint);
                 await UDP_CONTROLLER.SendToAsync(ByteEthernetMessage, endPoint);
                 await UDP_CONTROLLER.SendToAsync(ByteRSMessage, endPoint);
 
                 Console.ForegroundColor = ConsoleColor.Green;
-				Console.WriteLine("Отправлено: " + PROTOCOL_MESSAGE + "   " + bytes );
-               // Thread.Sleep(SLEEP_SEND);
-
+                Console.WriteLine("Отправлено: " + PROTOCOL_MESSAGE + "   " + bytes);
+                
             } catch (ArgumentOutOfRangeException ex) {
                 Console.WriteLine("Возникло исключение: " + ex.ToString() + "\n  " + ex.Message);
             } catch (Exception ex) {
                 Console.WriteLine("Возникло исключение: " + ex.ToString() + "\n  " + ex.Message);
             }
         }
-		
-		
-		protected async Task SendToInterfaceAsync() {
 
-            //Широковещательная рассылка 
-            /* UDP_CONTROLLER.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
-            IPEndPoint endPoint = new IPEndPoint(IPAddress.Broadcast, 27000);*/
+        internal async Task SendToInterfaceAsync(IPEndPoint END_POINT_INTERFACE , int SLEEP , Socket UDP_CONTROLLER) {
+
+            SLEEP_SEND_INTERFACE_N = SLEEP;
             while (true) {
                 try {
 
                     byte[] ByteProtocolMessage = Encoding.ASCII.GetBytes(PROTOCOL_MESSAGE);
                     byte[] ByteEthernetMessage = Encoding.ASCII.GetBytes(LAST_ETHERNET_MESSAGE + " |Time send " + DateTime.Now);
                     byte[] ByteRSMessage = Encoding.ASCII.GetBytes(LAST_RS_MESSAGE + " |Time send " + DateTime.Now);
-                    
+
                     //отправка на интерфейс постоянно 
                     int bytes = await UDP_CONTROLLER.SendToAsync(ByteProtocolMessage, END_POINT_INTERFACE);
                     int bytes1 = await UDP_CONTROLLER.SendToAsync(ByteEthernetMessage, END_POINT_INTERFACE);
@@ -178,7 +94,7 @@ namespace NavigationSystem {
 
                     Console.ForegroundColor = ConsoleColor.Blue;
                     Console.WriteLine("Отправлено на интерфейс: " + PROTOCOL_MESSAGE + " " + bytes + "  |||  " + LAST_ETHERNET_MESSAGE + " " + DateTime.Now + " " + bytes1);
-                    Thread.Sleep(SLEEP_SEND_INTERFACE);
+                    Thread.Sleep(SLEEP_SEND_INTERFACE_N);
 
                 } catch (ArgumentOutOfRangeException ex) {
                     Console.WriteLine("Возникло исключение: " + ex.ToString() + "\n  " + ex.Message);
@@ -191,12 +107,14 @@ namespace NavigationSystem {
 
         #region Модуль отправки и приема сообщений через COM порт
 
-        protected void ReceiverRS() {
+        internal void ReceiverRS( Dictionary<string,string> COMPORT, int SLEEP) {
+
+            SLEEP_RS_N = SLEEP;
 
             while (true) {
 
                 //Счетчик по каждому COM - порту
-                foreach (var port in COMPORT_DEVICE_OUTPUT.Values) {
+                foreach (var port in COMPORT.Values ) {
 
                     try {
                         //Проверка работоспособности выбранного порта
@@ -206,7 +124,7 @@ namespace NavigationSystem {
                         else {
                             SerialPort comport = new SerialPort(port);
                             comport.Open();
-                            
+
                             // Читаем данные из открытого порта 
                             string data1 = comport.ReadLine();
                             Console.WriteLine(data1);
@@ -221,16 +139,18 @@ namespace NavigationSystem {
 
                 }
                 //Задержка на чтение и отправку 
-                Thread.Sleep(SLEEP_RS);
+                Thread.Sleep(SLEEP_RS_N);
             }
         }
 
-        protected void SendToRS() {
+        internal void SendToRS(Dictionary<string,string> COMPORT , int SLEEP) {
+
+            SLEEP_RS_N = SLEEP;
 
             while (true) {
 
                 //Счетчик по каждому COM - порту
-                foreach (var port in COMPORT_DEVICE_INPUT.Values) {
+                foreach (var port in COMPORT.Values) {
 
                     try {
 
@@ -256,7 +176,7 @@ namespace NavigationSystem {
 
                 }
                 //Задержка на чтение и отправку 
-                Thread.Sleep(SLEEP_RS);
+                Thread.Sleep(SLEEP_RS_N);
             }
         }
 
@@ -264,10 +184,10 @@ namespace NavigationSystem {
 
         #region Модуль приема сообщений по Ethernet 
 
-        protected async Task ReceiverEthernetAsync() {
+        internal async Task ReceiverEthernetAsync(IPEndPoint LOCAL_IP, Socket UDP_CONTROLLER ) {
 
 
-            byte[] ReceiveBytes = new byte[512];
+            byte[] ReceiveBytes = new byte[2048];
             SocketFlags SF = new SocketFlags();
             //Получаем пришедшие IP с прослушивания 
             EndPoint RemoteIpEndPoint = (EndPoint)LOCAL_IP;
@@ -277,14 +197,9 @@ namespace NavigationSystem {
             while (true) {
                 try {
 
-                    var result = await UDP_CONTROLLER.ReceiveFromAsync(ReceiveBytes, SocketFlags.None , RemoteIpEndPoint);
+                    var result = await UDP_CONTROLLER.ReceiveFromAsync(ReceiveBytes, SocketFlags.None, RemoteIpEndPoint);
                     var Message = Encoding.ASCII.GetString(ReceiveBytes, 0, result.ReceivedBytes);
 
-
-                    if (Message.Contains("CUSPP")) {
-                        CheckCommand(Message);
-                        continue;
-                    }
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Принято:  " + Message);
 
@@ -296,43 +211,45 @@ namespace NavigationSystem {
             }
         }
 
-        #endregion
-
-        #region Модуль проверки и настройки контроллера 
-
-        protected void CheckCommand(string CommandMessage) {
+        internal async Task ReceiverEthernetAsync(IPEndPoint LOCAL_IP, Socket UDP_CONTROLLER, string patch , Controller Device) {
 
 
-            string data = FormattingDate(CommandMessage);//Получение только данных из сообщения
+            byte[] ReceiveBytes = new byte[2048];
+            SocketFlags SF = new SocketFlags();
+            //Получаем пришедшие IP с прослушивания 
+            EndPoint RemoteIpEndPoint = (EndPoint)LOCAL_IP;
 
-            List<string> data_mas = new List<string>(data.Split(','));//Получаю массив данных 
 
-            for(int i = 0;i<data_mas.Count;i++) {
-                
-                switch (data_mas[i]) {
-                    case "FREQ":
-                        SLEEP_SEND = Convert.ToInt32( data_mas[i + 1] );
-                    break;
+            Console.WriteLine("\n-----------Получение сообщений-----------");
+            while (true) {
+                try {
 
-                }
+                    var result = await UDP_CONTROLLER.ReceiveFromAsync(ReceiveBytes, SocketFlags.None, RemoteIpEndPoint);
+                    var Message = Encoding.ASCII.GetString(ReceiveBytes, 0, result.ReceivedBytes);
+
+                    if (Message.Contains("JSON")) {
+
+                        using (StreamWriter fileStream = new StreamWriter(patch, false)) {
+                            fileStream.Write(Message);
+                        }
+                        Device = JsonConvert.DeserializeObject<Controller>(File.ReadAllText(patch));
+
+                        SLEEP_SEND_INTERFACE_N = Device.SLEEP_SEND_INTERFACE;
+                        SLEEP_RS_N = Device.SLEEP_RS;
+                        continue;
+                    }
+
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Принято:  " + Message);
+                    LAST_ETHERNET_MESSAGE = Message;
+                    PROTOCOL_MESSAGE = MESSAGE.GetMessage(Message);
+
+                } catch (Exception ex) { }
+
             }
-        }
-
-
-        protected string FormattingDate(string NMEAmes) {
-
-
-            int startsum = (NMEAmes.IndexOf('$') + 7);
-            int length = (NMEAmes.Length - 10);
-
-            NMEAmes = NMEAmes.Substring(startsum, length);
-
-            return NMEAmes;
         }
 
         #endregion
 
     }
-
 }
-

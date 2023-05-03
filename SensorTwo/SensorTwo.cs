@@ -15,7 +15,7 @@ namespace Sensor {
             using var UDPClient = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
             //Адресс данного устройства - внести в JSON
-            var localIP = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 5006);
+            var localIP = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 5002);
             SocketFlags SF = new SocketFlags();
 
             // начинаем прослушивание входящих сообщений

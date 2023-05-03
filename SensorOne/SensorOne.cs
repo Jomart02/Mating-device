@@ -23,7 +23,7 @@ namespace Sensor {
 
             //Отправляемые данные - должны меняться 
             string nmeaString = "$GPGLL,4916.45,N,12311.12,W,225444,A,*31";
-            //string nmeaString = "$CUSPP,FREQ,100,*31";
+            //string nmeaString = "$CUSPP,PORT,*31";
             var nmeaByte = Encoding.ASCII.GetBytes(nmeaString);
 
             //Адресс оконечного устройства для отправки - добавить в JSON

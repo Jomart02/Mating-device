@@ -1,8 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "Xxib13i3vIvxJTtjS9Nr67T7ytxWcEA9c/KvlEWWSG67kNOcMfa/uykADHetWojfzxaBmPojRXYBBdu6VRdneg==",
+  "dgSpecHash": "m6QjuUl/q4wbsKZArZ68uzJiHw8n5ndaWPWov4sGpE+6SxfSKMX0jSn4E6dUC3iUjnWm6Ku0hGoZHahPYnMeGg==",
   "success": true,
   "projectFilePath": "C:\\2022-2023\\EthernetNavigationSystem\\SensorOne\\SensorOne.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\pc1\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512"
+  ],
   "logs": []
 }

@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "aaIk2mka0UTdqoQrWFMDP0eAvAh2gE/WVQut/3nWNadXR4yUYQZXQY9l2tJTj50vYjJ405yCDhIWHkmobqVAYg==",
+  "dgSpecHash": "gu8FcSzM6rijuuPJ9iXh53b/v6HEfbq45WdFhAeFJALid3UreqqFl7PHWfS15hnBnMPaEyzzW7X2o6O2GIKJfw==",
   "success": true,
   "projectFilePath": "C:\\2022-2023\\EthernetNavigationSystem\\Controller\\Controller.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\pc1\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512",
     "C:\\Users\\pc1\\.nuget\\packages\\runtime.linux-arm.runtime.native.system.io.ports\\7.0.0\\runtime.linux-arm.runtime.native.system.io.ports.7.0.0.nupkg.sha512",
     "C:\\Users\\pc1\\.nuget\\packages\\runtime.linux-arm64.runtime.native.system.io.ports\\7.0.0\\runtime.linux-arm64.runtime.native.system.io.ports.7.0.0.nupkg.sha512",
     "C:\\Users\\pc1\\.nuget\\packages\\runtime.linux-x64.runtime.native.system.io.ports\\7.0.0\\runtime.linux-x64.runtime.native.system.io.ports.7.0.0.nupkg.sha512",

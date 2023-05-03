@@ -1,8 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "fvXtrw+9BtKbmlWS8bj3HhzQUxYtZ/3al6rn5V3ynD1XKcVVv3mSdTFynwcq3WSdgFLnx4VRGzjUsGiUhWUbdw==",
+  "dgSpecHash": "k1gnwhNcxCHASG9UUWttdHEQRWyllmtu0i11IlJpLKPksuAHuRDYM2mN4EHID449MlSLvopr8ZBTzgNZuHIC1w==",
   "success": true,
   "projectFilePath": "C:\\2022-2023\\EthernetNavigationSystem\\SensorTwo\\SensorTwo.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\pc1\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512"
+  ],
   "logs": []
 }
