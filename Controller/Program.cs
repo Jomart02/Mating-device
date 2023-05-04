@@ -18,6 +18,8 @@ namespace NavigationSystem {
 
                 Controller DiplomDevice = JsonConvert.DeserializeObject<Controller>(File.ReadAllText(patch));
 
+                DiplomDevice.SetConfig(DiplomDevice);
+
                 IPEndPoint CONTROLLER_IP = new IPEndPoint(IPAddress.Parse(DiplomDevice.CONTROLLER_IP_ADDRESS), DiplomDevice.CONTROLLER_PORT);
                 IPEndPoint END_POINT_INTERFACE = new IPEndPoint(IPAddress.Parse(DiplomDevice.IP_ADDRESS_INTERFACE), DiplomDevice.INTERFACE_PORT);
 

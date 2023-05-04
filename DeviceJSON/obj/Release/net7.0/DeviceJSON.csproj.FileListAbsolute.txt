@@ -1,0 +1,15 @@
+C:\2022-2023\EthernetNavigationSystem\DeviceJSON\bin\Release\net7.0\DeviceJSON.exe
+C:\2022-2023\EthernetNavigationSystem\DeviceJSON\bin\Release\net7.0\DeviceJSON.deps.json
+C:\2022-2023\EthernetNavigationSystem\DeviceJSON\bin\Release\net7.0\DeviceJSON.runtimeconfig.json
+C:\2022-2023\EthernetNavigationSystem\DeviceJSON\bin\Release\net7.0\DeviceJSON.dll
+C:\2022-2023\EthernetNavigationSystem\DeviceJSON\bin\Release\net7.0\DeviceJSON.pdb
+C:\2022-2023\EthernetNavigationSystem\DeviceJSON\obj\Release\net7.0\DeviceJSON.csproj.AssemblyReference.cache
+C:\2022-2023\EthernetNavigationSystem\DeviceJSON\obj\Release\net7.0\DeviceJSON.GeneratedMSBuildEditorConfig.editorconfig
+C:\2022-2023\EthernetNavigationSystem\DeviceJSON\obj\Release\net7.0\DeviceJSON.AssemblyInfoInputs.cache
+C:\2022-2023\EthernetNavigationSystem\DeviceJSON\obj\Release\net7.0\DeviceJSON.AssemblyInfo.cs
+C:\2022-2023\EthernetNavigationSystem\DeviceJSON\obj\Release\net7.0\DeviceJSON.csproj.CoreCompileInputs.cache
+C:\2022-2023\EthernetNavigationSystem\DeviceJSON\obj\Release\net7.0\DeviceJSON.dll
+C:\2022-2023\EthernetNavigationSystem\DeviceJSON\obj\Release\net7.0\refint\DeviceJSON.dll
+C:\2022-2023\EthernetNavigationSystem\DeviceJSON\obj\Release\net7.0\DeviceJSON.pdb
+C:\2022-2023\EthernetNavigationSystem\DeviceJSON\obj\Release\net7.0\DeviceJSON.genruntimeconfig.cache
+C:\2022-2023\EthernetNavigationSystem\DeviceJSON\obj\Release\net7.0\ref\DeviceJSON.dll

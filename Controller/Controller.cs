@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using ProtokolLibrary;
 using System.IO.Ports;
 using Newtonsoft.Json;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace NavigationSystem {
     internal class Controller {
@@ -36,7 +37,7 @@ namespace NavigationSystem {
         public int SLEEP_SEND_INTERFACE { get; set; }
         public int SLEEP_RS { get; set; }
 
-        public int SLEEP_SEND_N;
+        //public int SLEEP_SEND_N;
         public int SLEEP_SEND_INTERFACE_N;
         public int SLEEP_RS_N;
 
@@ -44,6 +45,11 @@ namespace NavigationSystem {
         private static string LAST_ETHERNET_MESSAGE = "====";
         private static string LAST_RS_MESSAGE = "====";
         private static ProtokolMessage MESSAGE = new ProtokolMessage();
+
+        private static Controller CONTROLLER = new Controller();
+
+        private IPEndPoint END_POINT_INTERFACE;
+        private IPEndPoint END_POINT_CONTROLLER;
 
         #region Модуль отправки сообщений по Ethernet 
         /// <summary>
@@ -76,9 +82,10 @@ namespace NavigationSystem {
             }
         }
 
-        internal async Task SendToInterfaceAsync(IPEndPoint END_POINT_INTERFACE , int SLEEP , Socket UDP_CONTROLLER) {
+        internal async Task SendToInterfaceAsync(IPEndPoint POINT_INTERFACE , int SLEEP , Socket UDP_CONTROLLER) {
 
             SLEEP_SEND_INTERFACE_N = SLEEP;
+            END_POINT_INTERFACE = POINT_INTERFACE;
             while (true) {
                 try {
 
@@ -91,10 +98,11 @@ namespace NavigationSystem {
                     int bytes1 = await UDP_CONTROLLER.SendToAsync(ByteEthernetMessage, END_POINT_INTERFACE);
                     int bytes2 = await UDP_CONTROLLER.SendToAsync(ByteRSMessage, END_POINT_INTERFACE);
 
+                    Console.WriteLine($"{CONTROLLER.SLEEP_SEND_INTERFACE} + {CONTROLLER.INTERFACE_PORT} + {CONTROLLER.IP_ADDRESS_INTERFACE} + {END_POINT_INTERFACE}");
 
                     Console.ForegroundColor = ConsoleColor.Blue;
                     Console.WriteLine("Отправлено на интерфейс: " + PROTOCOL_MESSAGE + " " + bytes + "  |||  " + LAST_ETHERNET_MESSAGE + " " + DateTime.Now + " " + bytes1);
-                    Thread.Sleep(SLEEP_SEND_INTERFACE_N);
+                    Thread.Sleep(CONTROLLER.SLEEP_SEND_INTERFACE);
 
                 } catch (ArgumentOutOfRangeException ex) {
                     Console.WriteLine("Возникло исключение: " + ex.ToString() + "\n  " + ex.Message);
@@ -109,7 +117,7 @@ namespace NavigationSystem {
 
         internal void ReceiverRS( Dictionary<string,string> COMPORT, int SLEEP) {
 
-            SLEEP_RS_N = SLEEP;
+            CONTROLLER.SLEEP_RS = SLEEP;
 
             while (true) {
 
@@ -139,13 +147,13 @@ namespace NavigationSystem {
 
                 }
                 //Задержка на чтение и отправку 
-                Thread.Sleep(SLEEP_RS_N);
+                Thread.Sleep(CONTROLLER.SLEEP_RS);
             }
         }
 
         internal void SendToRS(Dictionary<string,string> COMPORT , int SLEEP) {
 
-            SLEEP_RS_N = SLEEP;
+            CONTROLLER.SLEEP_RS = SLEEP;
 
             while (true) {
 
@@ -153,7 +161,6 @@ namespace NavigationSystem {
                 foreach (var port in COMPORT.Values) {
 
                     try {
-
 
                         //Проверка работоспособности выбранного порта
                         var isValid = SerialPort.GetPortNames().Any(x => string.Compare(x, port, true) == 0);
@@ -176,7 +183,7 @@ namespace NavigationSystem {
 
                 }
                 //Задержка на чтение и отправку 
-                Thread.Sleep(SLEEP_RS_N);
+                Thread.Sleep(CONTROLLER.SLEEP_RS);
             }
         }
 
@@ -207,7 +214,6 @@ namespace NavigationSystem {
                     PROTOCOL_MESSAGE = MESSAGE.GetMessage(Message);
 
                 } catch (Exception ex) { }
-
             }
         }
 
@@ -217,25 +223,25 @@ namespace NavigationSystem {
             byte[] ReceiveBytes = new byte[2048];
             SocketFlags SF = new SocketFlags();
             //Получаем пришедшие IP с прослушивания 
-            EndPoint RemoteIpEndPoint = (EndPoint)LOCAL_IP;
-
-
+            END_POINT_CONTROLLER = LOCAL_IP;
+            
             Console.WriteLine("\n-----------Получение сообщений-----------");
             while (true) {
                 try {
 
-                    var result = await UDP_CONTROLLER.ReceiveFromAsync(ReceiveBytes, SocketFlags.None, RemoteIpEndPoint);
+                    var result = await UDP_CONTROLLER.ReceiveFromAsync(ReceiveBytes, SocketFlags.None, END_POINT_CONTROLLER);
                     var Message = Encoding.ASCII.GetString(ReceiveBytes, 0, result.ReceivedBytes);
 
-                    if (Message.Contains("JSON")) {
+                    if (result.RemoteEndPoint == END_POINT_INTERFACE) {
 
                         using (StreamWriter fileStream = new StreamWriter(patch, false)) {
                             fileStream.Write(Message);
                         }
                         Device = JsonConvert.DeserializeObject<Controller>(File.ReadAllText(patch));
 
-                        SLEEP_SEND_INTERFACE_N = Device.SLEEP_SEND_INTERFACE;
-                        SLEEP_RS_N = Device.SLEEP_RS;
+                        CONTROLLER.SetConfig(Device);
+                        
+                        //Console.WriteLine($"{CONTROLLER.SLEEP_SEND_INTERFACE} + {CONTROLLER.INTERFACE_PORT} + {CONTROLLER.IP_ADDRESS_INTERFACE}" );
                         continue;
                     }
 
@@ -248,8 +254,19 @@ namespace NavigationSystem {
 
             }
         }
-
         #endregion
+
+        /// <summary>
+        /// Метод выставляет конфигурационные настройки для работы
+        /// </summary>
+        /// <param name="NewContr">Созданный объект класса Controller</param>
+        internal void SetConfig( Controller NewContr) {
+            
+            CONTROLLER = NewContr;
+            END_POINT_INTERFACE = new IPEndPoint(IPAddress.Parse(CONTROLLER.IP_ADDRESS_INTERFACE), CONTROLLER.INTERFACE_PORT);
+            END_POINT_CONTROLLER = new IPEndPoint(IPAddress.Parse(CONTROLLER.CONTROLLER_IP_ADDRESS), CONTROLLER.CONTROLLER_PORT);
+            
+        }
 
     }
 }
