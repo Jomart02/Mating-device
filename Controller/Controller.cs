@@ -44,11 +44,11 @@ namespace NavigationSystem {
         [JsonIgnore]
         private static string PROTOCOL_MESSAGE = "$MDRND,000000.00,000000,0000.0000,N,00000.0000,E,000.0,N,00.0,K,000.0*73"; //-стандартное сообщение 
         [JsonIgnore]
-        private static string LAST_ETHERNET_MESSAGE = "====";
+        private static string LAST_ETHERNET_MESSAGE = "";
         [JsonIgnore]
-        private static string LAST_ETHERNET_POINT = "====";
+        private static string LAST_ETHERNET_POINT = "";
         [JsonIgnore]
-        private static string LAST_RS_MESSAGE = "====";
+        private static string LAST_RS_MESSAGE = "";
         [JsonIgnore]
         private static ProtokolMessage MESSAGE = new ProtokolMessage();
         [JsonIgnore]
