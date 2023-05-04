@@ -100,7 +100,7 @@ namespace NavigationSystem {
                     byte[] ByteEthernetMessage = Encoding.ASCII.GetBytes(LAST_ETHERNET_MESSAGE + " |Time send " + DateTime.Now);
                     byte[] ByteRSMessage = Encoding.ASCII.GetBytes(LAST_RS_MESSAGE + " |Time send " + DateTime.Now);*/
 
-                    string json = "{\"type\":\"last_message\"," + "\"message\":" + JsonConvert.SerializeObject(LAST_ETHERNET_MESSAGE) +"," + "\"client_address\":" + JsonConvert.SerializeObject(LAST_ETHERNET_POINT) + "}";
+                    string json = "{\"type\":\"protokol_message\"," + "\"message\":" + JsonConvert.SerializeObject(PROTOCOL_MESSAGE) +"," + "\"client_address\":" + JsonConvert.SerializeObject( Convert.ToString(END_POINT_CONTROLLER) ) + "}";
                     byte[] ByteMessage = Encoding.ASCII.GetBytes(json);
                     int bytes = await UDP_CONTROLLER.SendToAsync(ByteMessage, END_POINT_INTERFACE);
                     //отправка на интерфейс постоянно 
@@ -253,6 +253,10 @@ namespace NavigationSystem {
 
                     LAST_ETHERNET_MESSAGE = Message;
                     LAST_ETHERNET_POINT = result.RemoteEndPoint.ToString();
+
+                    string json = "{\"type\":\"last_message\"," + "\"message\":" + JsonConvert.SerializeObject(LAST_ETHERNET_MESSAGE) + "," + "\"client_address\":" + JsonConvert.SerializeObject(LAST_ETHERNET_POINT) + "\"date_time\":" + DateTime.Now +  "}";
+                    byte[] ByteMessage = Encoding.ASCII.GetBytes(json);
+                    int bytes = await UDP_CONTROLLER.SendToAsync(ByteMessage, END_POINT_INTERFACE);
 
                     PROTOCOL_MESSAGE = MESSAGE.GetMessage(Message);
 

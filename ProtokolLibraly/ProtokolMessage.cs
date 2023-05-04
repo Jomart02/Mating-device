@@ -54,7 +54,7 @@ namespace ProtokolLibrary {
         /// </summary>
         /// <param name="NMEA_MES"></param>
         /// <returns></returns>
-        public string GetMessage(string NMEA_MES) {
+        public string  GetMessage(string NMEA_MES) {
 
            string CODE = "MDRND"; //Mating Device Required Navigation Data - Сопрягающее Устройство Необходимые Навигационные Данные 
            string CONTROL_SUM = "";
