@@ -38,6 +38,11 @@ namespace Sensor {
                 string NMEAmes = Encoding.ASCII.GetString(datares);
                 Console.WriteLine(NMEAmes);
 
+                using (StreamWriter fileStream = new StreamWriter("only.json", false)) {
+                    fileStream.Write(NMEAmes);
+                }
+
+
 
             }
         }

@@ -52,7 +52,7 @@ namespace NavigationSystem {
                         await DiplomDevice.SendToReceiversAsync(Convert.ToInt32(device[1]), (string)device[0], UDP_CONTROLLER);
                     }
 
-                    DiplomDevice = JsonConvert.DeserializeObject<Controller>(File.ReadAllText(patch));
+                   // DiplomDevice = JsonConvert.DeserializeObject<Controller>(File.ReadAllText(patch));
                     
                     Thread.Sleep(DiplomDevice.SLEEP_SEND);
                 }

@@ -5,13 +5,13 @@ using System.Text;
 // Клиент 1
 namespace Sensor {
     class DeviceJSON {
-        static void Main(string[] args) {
+        static async Task Main(string[] args) {
 
 
             using var UDPClient = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
             //Адресс данного устройства - внести в JSON
-            var localIP = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 5021);
+            var localIP = new IPEndPoint(IPAddress.Parse("127.0.0.2"), 5003);
             SocketFlags SF = new SocketFlags();
 
             // начинаем прослушивание входящих сообщений
@@ -34,12 +34,19 @@ namespace Sensor {
             EndPoint remotePoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 5001);
 
             while (true) {
+                try {
+                    int bytes = await UDPClient.SendToAsync(sendBuffer, remotePoint);
 
-                int bytes = UDPClient.SendTo(sendBuffer, remotePoint);
+                    
+                    var result = await UDPClient.ReceiveFromAsync(datares, SocketFlags.None, remotePoint);
+                    var Message = Encoding.ASCII.GetString(datares, 0, result.ReceivedBytes);
+                    Console.WriteLine(Message);
+                    Console.WriteLine($"Отправлено {bytes} байт file");
 
-                Console.WriteLine($"Отправлено {bytes} байт file");
 
-                Thread.Sleep(1000);
+                    Thread.Sleep(1000);
+
+                } catch(Exception ex) { }
             }
 
 
