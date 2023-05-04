@@ -100,9 +100,13 @@ namespace NavigationSystem {
                     byte[] ByteEthernetMessage = Encoding.ASCII.GetBytes(LAST_ETHERNET_MESSAGE + " |Time send " + DateTime.Now);
                     byte[] ByteRSMessage = Encoding.ASCII.GetBytes(LAST_RS_MESSAGE + " |Time send " + DateTime.Now);*/
 
-                    string json = "{\"type\":\"protokol_message\"," + "\"message\":" + JsonConvert.SerializeObject(PROTOCOL_MESSAGE) + "," + "\"client_address\":" + JsonConvert.SerializeObject(Convert.ToString(END_POINT_CONTROLLER)) + ",\"date_time\":" + "\"" + DateTime.Now + "\"" + "}";
-                   
+                    string json = "{\"type\":\"protokol_message\"," + "\"client_name\":" + "\"CONTROLLER\","  + "\"message\":" + JsonConvert.SerializeObject(PROTOCOL_MESSAGE) + "," + "\"client_address\":" + JsonConvert.SerializeObject(Convert.ToString(END_POINT_CONTROLLER)) + ",\"date_time\":" + "\"" + DateTime.Now + "\"" + "}";
                     
+                    using (StreamWriter fileStream = new StreamWriter("send_mes.json", false)) {
+                        fileStream.Write(json);
+
+                    }
+
                     byte[] ByteMessage = Encoding.ASCII.GetBytes(json);
                     int bytes = await UDP_CONTROLLER.SendToAsync(ByteMessage, END_POINT_INTERFACE);
                     //отправка на интерфейс постоянно 
@@ -237,6 +241,7 @@ namespace NavigationSystem {
             //Получаем пришедшие IP с прослушивания 
             END_POINT_CONTROLLER = LOCAL_IP;
             string text = "";
+            string code = "";
             Console.WriteLine("\n-----------Получение сообщений-----------");
             while (true) {
                 try {
@@ -255,17 +260,21 @@ namespace NavigationSystem {
 
                     LAST_ETHERNET_MESSAGE = Message;
                     LAST_ETHERNET_POINT = result.RemoteEndPoint.ToString();
+                    code = GetKeyFromValue( LAST_ETHERNET_POINT , Device);
+                    Console.WriteLine(code);
+                    PROTOCOL_MESSAGE = MESSAGE.GetMessage(Message);
 
-                    string json = "{\"type\":\"last_message\"," + "\"message\":" + JsonConvert.SerializeObject(LAST_ETHERNET_MESSAGE) + "," + "\"client_address\":" + JsonConvert.SerializeObject(LAST_ETHERNET_POINT) +  ",\"date_time\":" +"\"" +  DateTime.Now + "\"" +  "}";
+                    string json = "{\"type\":\"last_message\"," + "\"client_name\":" + "\"" + code + "\"," + "\"message\":" + JsonConvert.SerializeObject(LAST_ETHERNET_MESSAGE) + "," + "\"client_address\":" + JsonConvert.SerializeObject(LAST_ETHERNET_POINT)  + ",\"date_time\":" +"\"" +  DateTime.Now + "\"" +  "}";
+
                     using (StreamWriter fileStream = new StreamWriter("send.json", false)) {
                         fileStream.Write(json);
+
                     }
+
                     byte[] ByteMessage = Encoding.ASCII.GetBytes(json);
                     int bytes = await UDP_CONTROLLER.SendToAsync(ByteMessage, END_POINT_INTERFACE);
 
-                    PROTOCOL_MESSAGE = MESSAGE.GetMessage(Message);
-
-                } catch (Exception ex) {  }
+                } catch (Exception ex) { Console.WriteLine(ex.Message); }
 
             }
         }
@@ -275,8 +284,10 @@ namespace NavigationSystem {
         internal async Task CommandRelease(string Message , Controller device, string patch, Socket UDP_CONTROLLER) {
 
             try {
+                using (StreamWriter fileStream = new StreamWriter("New.json", false)) {
+                    fileStream.Write(Message);
+                }
 
-                
                 Console.WriteLine(Message);
                 dynamic JsonFile = JsonConvert.DeserializeObject(File.ReadAllText("New.json"));
                 string com = Convert.ToString( JsonFile["type"]);
@@ -311,6 +322,34 @@ namespace NavigationSystem {
 
             }catch(Exception ex) { Console.WriteLine(ex.Message); }
         }
+
+
+        public static string GetKeyFromValue(string valueVar , Controller device ) {
+
+            int index = valueVar.IndexOf(':');
+            string ip = valueVar.Substring(0, index);
+            int port = Convert.ToInt32( valueVar.Substring(index+1, 4) );
+
+            Console.WriteLine(ip + port);
+            object[] dev = { ip, port };
+
+
+            foreach (string keyVar in device.IP_PORT_SENSOR.Keys) {
+                
+                if (Convert.ToInt32(device.IP_PORT_SENSOR[keyVar][1]) == port) {
+                    return keyVar;
+                }
+            }
+
+            foreach (string keyVar in device.IP_PORT_DEVICE.Keys) {
+                if (device.IP_PORT_DEVICE[keyVar] == dev) {
+                    return keyVar;
+                }
+            }
+
+            return null;
+        }
+
 
         /// <summary>
         /// Метод выставляет конфигурационные настройки для работы

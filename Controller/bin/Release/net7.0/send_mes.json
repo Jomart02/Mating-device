@@ -1,6 +1,1 @@
-{
-  "type": "protokol_message",
-  "message": "$MDRND,225444,000000,4916.45,N,12311.12,W,000.0,N,00.0,K,000.0*46",
-  "client_address": "127.0.0.1:5001",
-  "date_time": "04.05.2023 23:00:19"
-}
+{"type":"protokol_message","client_name":"CONTROLLER","message":"$MDRND,225444,000000,4916.45,N,12311.12,W,000.0,N,00.0,K,000.0*46","client_address":"127.0.0.1:5001","date_time":"05.05.2023 0:04:28"}

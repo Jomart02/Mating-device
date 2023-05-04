@@ -167,7 +167,7 @@ namespace ProtokolLibrary {
         /// </summary>
         /// <param name="NMEA_MES"></param>
         /// <returns></returns>
-        private string GetCode(string NMEA_MES) {
+        public static string GetCode(string NMEA_MES) {
 
             string code = "";
             code = NMEA_MES.Substring(3,3);
