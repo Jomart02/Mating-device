@@ -1,0 +1,6 @@
+{
+  "type": "last_message",
+  "message": "$GPGLL,4916.45,N,12311.12,W,225444,A,*31",
+  "client_address": "127.0.0.7:5010",
+  "date_time": "04.05.2023 23:00:20"
+}

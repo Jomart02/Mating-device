@@ -100,7 +100,9 @@ namespace NavigationSystem {
                     byte[] ByteEthernetMessage = Encoding.ASCII.GetBytes(LAST_ETHERNET_MESSAGE + " |Time send " + DateTime.Now);
                     byte[] ByteRSMessage = Encoding.ASCII.GetBytes(LAST_RS_MESSAGE + " |Time send " + DateTime.Now);*/
 
-                    string json = "{\"type\":\"protokol_message\"," + "\"message\":" + JsonConvert.SerializeObject(PROTOCOL_MESSAGE) +"," + "\"client_address\":" + JsonConvert.SerializeObject( Convert.ToString(END_POINT_CONTROLLER) ) + "}";
+                    string json = "{\"type\":\"protokol_message\"," + "\"message\":" + JsonConvert.SerializeObject(PROTOCOL_MESSAGE) + "," + "\"client_address\":" + JsonConvert.SerializeObject(Convert.ToString(END_POINT_CONTROLLER)) + ",\"date_time\":" + "\"" + DateTime.Now + "\"" + "}";
+                   
+                    
                     byte[] ByteMessage = Encoding.ASCII.GetBytes(json);
                     int bytes = await UDP_CONTROLLER.SendToAsync(ByteMessage, END_POINT_INTERFACE);
                     //отправка на интерфейс постоянно 
@@ -254,7 +256,10 @@ namespace NavigationSystem {
                     LAST_ETHERNET_MESSAGE = Message;
                     LAST_ETHERNET_POINT = result.RemoteEndPoint.ToString();
 
-                    string json = "{\"type\":\"last_message\"," + "\"message\":" + JsonConvert.SerializeObject(LAST_ETHERNET_MESSAGE) + "," + "\"client_address\":" + JsonConvert.SerializeObject(LAST_ETHERNET_POINT) + "\"date_time\":" + DateTime.Now +  "}";
+                    string json = "{\"type\":\"last_message\"," + "\"message\":" + JsonConvert.SerializeObject(LAST_ETHERNET_MESSAGE) + "," + "\"client_address\":" + JsonConvert.SerializeObject(LAST_ETHERNET_POINT) +  ",\"date_time\":" +"\"" +  DateTime.Now + "\"" +  "}";
+                    using (StreamWriter fileStream = new StreamWriter("send.json", false)) {
+                        fileStream.Write(json);
+                    }
                     byte[] ByteMessage = Encoding.ASCII.GetBytes(json);
                     int bytes = await UDP_CONTROLLER.SendToAsync(ByteMessage, END_POINT_INTERFACE);
 
@@ -271,9 +276,7 @@ namespace NavigationSystem {
 
             try {
 
-                using (StreamWriter fileStream = new StreamWriter("New.json", false)) {
-                    fileStream.Write(Message);
-                }
+                
                 Console.WriteLine(Message);
                 dynamic JsonFile = JsonConvert.DeserializeObject(File.ReadAllText("New.json"));
                 string com = Convert.ToString( JsonFile["type"]);
