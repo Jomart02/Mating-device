@@ -295,25 +295,28 @@ namespace NavigationSystem {
                 byte[] ByteMessage = new byte[512];
 
                 switch (com) {
-                    case "setf":
-                        Console.WriteLine(JsonFile["type"] + " " + JsonFile["SLEEP_SEND_INTERFACE"] + " " + device.SLEEP_SEND_INTERFACE);
-                        device.SLEEP_SEND_INTERFACE = Convert.ToInt32(JsonFile["SLEEP_SEND_INTERFACE"]);
+                    case "set_frequency":
+                        if (Convert.ToString(JsonFile["device"]) == "interface"  && Convert.ToInt32(JsonFile["frequency"]) != device.SLEEP_SEND_INTERFACE && Convert.ToInt32(JsonFile["frequency"]) != null) device.SLEEP_SEND_INTERFACE = Convert.ToInt32(JsonFile["frequency"]);
+                        if (Convert.ToString(JsonFile["device"]) == "ethernet_device" && Convert.ToInt32(JsonFile["frequency"]) != device.SLEEP_SEND && Convert.ToInt32(JsonFile["frequency"]) != null) device.SLEEP_SEND = Convert.ToInt32(JsonFile["frequency"]) ;
+                        if (Convert.ToString(JsonFile["device"]) == "rs_device" && Convert.ToInt32(JsonFile["frequency"]) != device.SLEEP_RS && Convert.ToInt32(JsonFile["frequency"]) != null) device.SLEEP_RS = Convert.ToInt32(JsonFile["frequency"]);
                     break;
 
                     case "get_udp_clients":
-                        json = JsonConvert.SerializeObject(device.IP_PORT_SENSOR) + JsonConvert.SerializeObject(device.IP_PORT_DEVICE);
+                        json = "{\"type\":\"clients_udp\"," + "\"clients_sensor\":" + JsonConvert.SerializeObject(device.IP_PORT_SENSOR) + ",\"clients_device\":" + JsonConvert.SerializeObject(device.IP_PORT_DEVICE) + "}" ;
                         ByteMessage = Encoding.ASCII.GetBytes(json);
                         await UDP_CONTROLLER.SendToAsync(ByteMessage, END_POINT_INTERFACE);
                     break;
 
                     case "get_rs_clients":
-                        json = JsonConvert.SerializeObject(device.COMPORT_DEVICE_INPUT) + JsonConvert.SerializeObject(device.COMPORT_DEVICE_OUTPUT);
+                        json = "{\"type\":\"clients_rs\"," + "\"comport_in\":" + JsonConvert.SerializeObject(device.COMPORT_DEVICE_INPUT) + ",\"comport_out\":" +  JsonConvert.SerializeObject(device.COMPORT_DEVICE_OUTPUT) + "}" ;
                         ByteMessage = Encoding.ASCII.GetBytes(json);
                         await UDP_CONTROLLER.SendToAsync(ByteMessage, END_POINT_INTERFACE);
                     break;
 
                     case "get_frequency":
-
+                        json = "{\"type\":\"clients_frequency\"," + "\"interface\":" +  JsonConvert.SerializeObject(device.SLEEP_SEND_INTERFACE) + ",\"ethernet_device\":" + JsonConvert.SerializeObject(device.SLEEP_SEND) + ",\"rs_device\":" + JsonConvert.SerializeObject(device.SLEEP_RS) + "}";
+                        ByteMessage = Encoding.ASCII.GetBytes(json);
+                        await UDP_CONTROLLER.SendToAsync(ByteMessage, END_POINT_INTERFACE);
                     break;
                 }
                 //Console.WriteLine(JsonFile["type"] + " " + JsonFile["SLEEP_SEND_INTERFACE"] + " " + device.SLEEP_SEND_INTERFACE);

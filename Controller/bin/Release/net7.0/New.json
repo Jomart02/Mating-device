@@ -1,4 +1,5 @@
 {
-  "type": "get_udp_clients",
-  "SLEEP_SEND_INTERFACE": 100
+  "type": "set_frequency",
+  "device": "interface", 
+  "frequency": 1000
 }
