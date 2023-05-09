@@ -30,10 +30,10 @@ namespace NavigationSystem {
                 UDP_CONTROLLER.Bind(CONTROLLER_IP);
 
                 //Поток для прослушивания Com портов
-                Thread COMReceive = new Thread(() => DiplomDevice.ReceiverRS( DiplomDevice.COMPORT_DEVICE_OUTPUT , DiplomDevice.SLEEP_RS ));
+                Thread COMReceive = new Thread(() => DiplomDevice.ReceiverRS( DiplomDevice.COMPORT_DEVICE_OUTPUT , DiplomDevice.SLEEP_RS , UDP_CONTROLLER));
                 COMReceive.Start();
                 //Поток для отправки сообщений Com портам
-                Thread COMSend = new Thread(() =>  DiplomDevice.SendToRS(DiplomDevice.COMPORT_DEVICE_INPUT , DiplomDevice.SLEEP_RS) );
+                Thread COMSend = new Thread(() =>  DiplomDevice.SendToRS(DiplomDevice.COMPORT_DEVICE_INPUT , DiplomDevice.SLEEP_RS, UDP_CONTROLLER) );
                 COMSend.Start();
                  
                 //Асинхронный поток для прослушивания Ethernet 

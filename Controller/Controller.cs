@@ -21,26 +21,20 @@ namespace NavigationSystem {
         public string CONTROLLER_IP_ADDRESS { get; set; }
         //Порт контроллера
         public int CONTROLLER_PORT { get; set; }
-        // 
         public string IP_ADDRESS_INTERFACE { get; set; }
         //Порт интерфейса
         public int INTERFACE_PORT { get; set; }
 
-        public string IP_ADDRESS_SENSOR  { get; set; }
         public Dictionary<string, object[]> IP_PORT_SENSOR = new Dictionary<string, object[]>();
-
-        public string IP_ADDRESS_DEVICE { get; set; }
         public Dictionary<string, object[]> IP_PORT_DEVICE = new Dictionary<string, object[]>();
 
         public Dictionary<string, string> COMPORT_DEVICE_OUTPUT = new Dictionary<string, string>();
         public Dictionary<string, string> COMPORT_DEVICE_INPUT = new Dictionary<string, string>();
 
         public int SLEEP_SEND  { get; set; }
-        [JsonProperty("SLEEP_SEND_INTERFACE")]
         public int SLEEP_SEND_INTERFACE { get; set; }
         public int SLEEP_RS { get; set; }
 
-        
         [JsonIgnore]
         private static string PROTOCOL_MESSAGE = "$MDRND,000000.00,000000,0000.0000,N,00000.0000,E,000.0,N,00.0,K,000.0*73"; //-стандартное сообщение 
         [JsonIgnore]
@@ -96,26 +90,11 @@ namespace NavigationSystem {
             while (true) {
                 try {
 
-                    /*byte[] ByteProtocolMessage = Encoding.ASCII.GetBytes(PROTOCOL_MESSAGE);
-                    byte[] ByteEthernetMessage = Encoding.ASCII.GetBytes(LAST_ETHERNET_MESSAGE + " |Time send " + DateTime.Now);
-                    byte[] ByteRSMessage = Encoding.ASCII.GetBytes(LAST_RS_MESSAGE + " |Time send " + DateTime.Now);*/
-
                     string json = "{\"type\":\"protokol_message\"," + "\"client_name\":" + "\"CONTROLLER\","  + "\"message\":" + JsonConvert.SerializeObject(PROTOCOL_MESSAGE) + "," + "\"client_address\":" + JsonConvert.SerializeObject(Convert.ToString(END_POINT_CONTROLLER)) + ",\"date_time\":" + "\"" + DateTime.Now + "\"" + "}";
                     
-                    using (StreamWriter fileStream = new StreamWriter("send_mes.json", false)) {
-                        fileStream.Write(json);
-
-                    }
-
                     byte[] ByteMessage = Encoding.ASCII.GetBytes(json);
-                    int bytes = await UDP_CONTROLLER.SendToAsync(ByteMessage, END_POINT_INTERFACE);
-                    //отправка на интерфейс постоянно 
-                    /* int bytes = await UDP_CONTROLLER.SendToAsync(ByteProtocolMessage, END_POINT_INTERFACE);
-                     int bytes1 = await UDP_CONTROLLER.SendToAsync(ByteEthernetMessage, END_POINT_INTERFACE);
-                     int bytes2 = await UDP_CONTROLLER.SendToAsync(ByteRSMessage, END_POINT_INTERFACE);*/
-
-                    // Console.WriteLine($"{CONTROLLER.SLEEP_SEND_INTERFACE} + {CONTROLLER.INTERFACE_PORT} + {CONTROLLER.IP_ADDRESS_INTERFACE} + {END_POINT_INTERFACE}");
-
+                    var bytes =UDP_CONTROLLER.SendTo(ByteMessage, END_POINT_INTERFACE);
+                    
                     Console.ForegroundColor = ConsoleColor.Blue;
                     Console.WriteLine("Отправлено на интерфейс: " + PROTOCOL_MESSAGE + " " + bytes + "  |||  " + LAST_ETHERNET_MESSAGE );
                     Thread.Sleep(CONTROLLER.SLEEP_SEND_INTERFACE);
@@ -131,22 +110,27 @@ namespace NavigationSystem {
 
         #region Модуль отправки и приема сообщений через COM порт
 
-        internal void ReceiverRS( Dictionary<string,string> COMPORT, int SLEEP) {
+        internal void ReceiverRS( Dictionary<string,string> COMPORT, int SLEEP, Socket UDP_CONTROLLER) {
 
             CONTROLLER.SLEEP_RS = SLEEP;
 
             while (true) {
 
                 //Счетчик по каждому COM - порту
-                foreach (var port in COMPORT.Values ) {
+                foreach (var port in COMPORT.Keys) {
 
                     try {
                         //Проверка работоспособности выбранного порта
-                        var isValid = SerialPort.GetPortNames().Any(x => string.Compare(x, port, true) == 0);
-                        if (!isValid)
-                            throw new System.IO.IOException(string.Format("{0} port was not found", port));//Информация - что порт закрыт
-                        else {
-                            SerialPort comport = new SerialPort(port);
+                        var isValid = SerialPort.GetPortNames().Any(x => string.Compare(x, COMPORT[port], true) == 0);
+                        if (!isValid) {
+
+                            var json = "{\"type\":\"rs_info\"," + "\"name_device\":" + JsonConvert.SerializeObject(port) + ",\"COM_PORT\":" + JsonConvert.SerializeObject(COMPORT[port]) + ",\"valid\":" + JsonConvert.SerializeObject(0) + ",\"message\":" + JsonConvert.SerializeObject(0) +  "}";
+                            var ByteMessage = Encoding.ASCII.GetBytes(json);
+                      //      UDP_CONTROLLER.SendToAsync(ByteMessage, END_POINT_INTERFACE);
+
+                            throw new System.IO.IOException(string.Format("{0} port was not found", COMPORT[port]));//Информация - что порт закрыт
+                        }else {
+                            SerialPort comport = new SerialPort(COMPORT[port]);
                             comport.Open();
 
                             // Читаем данные из открытого порта 
@@ -155,6 +139,11 @@ namespace NavigationSystem {
                             //Формируем информационное сообщение и сохраняем пришедшие данные 
                             PROTOCOL_MESSAGE = MESSAGE.GetMessage(data1);
                             LAST_RS_MESSAGE = data1;
+
+                            var json = "{\"type\":\"rs_info\"," + "\"name_device\":" + JsonConvert.SerializeObject(port) + ",\"COM_PORT\":" + JsonConvert.SerializeObject(COMPORT[port]) + ",\"valid\":" + JsonConvert.SerializeObject(1) + ",\"message\":" + JsonConvert.SerializeObject(LAST_RS_MESSAGE) + "}";
+                            var ByteMessage = Encoding.ASCII.GetBytes(json);
+                            UDP_CONTROLLER.SendToAsync(ByteMessage, END_POINT_INTERFACE);
+
                             //закрываем порт для работы без ошибок 
                             comport.Close();
                         }
@@ -167,23 +156,27 @@ namespace NavigationSystem {
             }
         }
 
-        internal void SendToRS(Dictionary<string,string> COMPORT , int SLEEP) {
+        internal void SendToRS(Dictionary<string,string> COMPORT , int SLEEP, Socket UDP_CONTROLLER) {
 
             CONTROLLER.SLEEP_RS = SLEEP;
 
             while (true) {
 
                 //Счетчик по каждому COM - порту
-                foreach (var port in COMPORT.Values) {
+                foreach (var port in COMPORT.Keys) {
 
                     try {
-
                         //Проверка работоспособности выбранного порта
-                        var isValid = SerialPort.GetPortNames().Any(x => string.Compare(x, port, true) == 0);
-                        if (!isValid)
-                            throw new System.IO.IOException(string.Format("{0} port was not found", port));//Информация - что порт закрыт
-                        else {
-                            SerialPort comport = new SerialPort(port);
+                        var isValid = SerialPort.GetPortNames().Any(x => string.Compare(x, COMPORT[port], true) == 0);
+                        if (!isValid) {
+
+                            var json = "{\"type\":\"rs_info\"," + "\"name_device\":" + JsonConvert.SerializeObject(port) + ",\"COM_PORT\":" + JsonConvert.SerializeObject(COMPORT[port]) + ",\"valid\":" + JsonConvert.SerializeObject(0) + ",\"message\":" + JsonConvert.SerializeObject(0) + "}";
+                            var ByteMessage = Encoding.ASCII.GetBytes(json);
+                           // UDP_CONTROLLER.SendToAsync(ByteMessage, END_POINT_INTERFACE);
+
+                            throw new System.IO.IOException(string.Format("{0} port was not found", COMPORT[port]));//Информация - что порт закрыт
+                        } else {
+                            SerialPort comport = new SerialPort(COMPORT[port]);
                             comport.Open();
 
                             //передаем данные оконечномоу устройству 
@@ -240,7 +233,6 @@ namespace NavigationSystem {
             SocketFlags SF = new SocketFlags();
             //Получаем пришедшие IP с прослушивания 
             END_POINT_CONTROLLER = LOCAL_IP;
-            string text = "";
             string code = "";
             Console.WriteLine("\n-----------Получение сообщений-----------");
             while (true) {
@@ -251,7 +243,7 @@ namespace NavigationSystem {
                    
                     if (result.RemoteEndPoint.ToString() == END_POINT_INTERFACE.ToString()) {
 
-                        await Task.Run(() => CommandRelease(Message,Device,patch , UDP_CONTROLLER));
+                        await Task.Run(() => SetCommand(Message,Device,patch , UDP_CONTROLLER));
                         continue;
                     }
 
@@ -261,27 +253,22 @@ namespace NavigationSystem {
                     LAST_ETHERNET_MESSAGE = Message;
                     LAST_ETHERNET_POINT = result.RemoteEndPoint.ToString();
                     code = GetKeyFromValue( LAST_ETHERNET_POINT , Device);
-                    Console.WriteLine(code);
+                    
                     PROTOCOL_MESSAGE = MESSAGE.GetMessage(Message);
 
                     string json = "{\"type\":\"last_message\"," + "\"client_name\":" + "\"" + code + "\"," + "\"message\":" + JsonConvert.SerializeObject(LAST_ETHERNET_MESSAGE) + "," + "\"client_address\":" + JsonConvert.SerializeObject(LAST_ETHERNET_POINT)  + ",\"date_time\":" +"\"" +  DateTime.Now + "\"" +  "}";
 
-                    using (StreamWriter fileStream = new StreamWriter("send.json", false)) {
-                        fileStream.Write(json);
-
-                    }
-
                     byte[] ByteMessage = Encoding.ASCII.GetBytes(json);
                     int bytes = await UDP_CONTROLLER.SendToAsync(ByteMessage, END_POINT_INTERFACE);
 
-                } catch (Exception ex) { Console.WriteLine(ex.Message); }
+                } catch (Exception ex) {   }
 
             }
         }
         #endregion
 
 
-        internal async Task CommandRelease(string Message , Controller device, string patch, Socket UDP_CONTROLLER) {
+        internal async Task SetCommand(string Message , Controller device, string patch, Socket UDP_CONTROLLER) {
 
             try {
                 using (StreamWriter fileStream = new StreamWriter("New.json", false)) {
@@ -318,8 +305,18 @@ namespace NavigationSystem {
                         ByteMessage = Encoding.ASCII.GetBytes(json);
                         await UDP_CONTROLLER.SendToAsync(ByteMessage, END_POINT_INTERFACE);
                     break;
+
+                    case "add_client_sensor":
+                        if (CheckPort(Convert.ToInt32(JsonFile["client_port"]), device) && !device.IP_PORT_DEVICE.ContainsKey(JsonFile["client_name"]) && !device.IP_PORT_SENSOR.ContainsKey(JsonFile["client_name"])) {
+                            device.IP_PORT_SENSOR.Add(Convert.ToString(JsonFile["client_name"]), new object[] { Convert.ToString(JsonFile["client_ip"]) , Convert.ToInt32(JsonFile["client_port"]) }); 
+                        } else Console.WriteLine("Error");
+                    break;
+
+                    case "remove_client":
+
+                    break;
                 }
-                //Console.WriteLine(JsonFile["type"] + " " + JsonFile["SLEEP_SEND_INTERFACE"] + " " + device.SLEEP_SEND_INTERFACE);
+                
                 File.WriteAllText(patch, JsonConvert.SerializeObject(device));
                 SetConfig(device);
 
@@ -327,13 +324,37 @@ namespace NavigationSystem {
         }
 
 
+        /// <summary>
+        /// Метод для проверки наличия вводимого ip в словаре
+        /// </summary>
+        /// <param name="ip"></param>
+        /// <param name="device"></param>
+        /// <returns true = "если можно добавить устройство"></returns>
+        public static bool CheckPort(int port, Controller device) {
+            
+            foreach (var keyVar in device.IP_PORT_SENSOR.Values) {
+
+                if (Convert.ToInt32(keyVar[1]) == port) {
+                    return false;
+                }
+            }
+
+            foreach (var keyVar in device.IP_PORT_DEVICE.Values) {
+                if (Convert.ToInt32(keyVar[1]) == port) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+
+        
         public static string GetKeyFromValue(string valueVar , Controller device ) {
 
             int index = valueVar.IndexOf(':');
             string ip = valueVar.Substring(0, index);
             int port = Convert.ToInt32( valueVar.Substring(index+1, 4) );
 
-            Console.WriteLine(ip + port);
             object[] dev = { ip, port };
 
 
@@ -350,7 +371,7 @@ namespace NavigationSystem {
                 }
             }
 
-            return null;
+            return "no_data";
         }
 
 

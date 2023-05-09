@@ -1,5 +1,6 @@
 {
-  "type": "set_frequency",
-  "device": "interface", 
-  "frequency": 1000
+  "type": "add_client_sensor",
+  "client_name": "INS",
+  "client_ip": "127.0.0.16",
+  "client_port": 5016
 }

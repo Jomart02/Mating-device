@@ -28,8 +28,6 @@ namespace Sensor {
             //Адресс оконечного устройства для отправки - добавить в JSON
             EndPoint remotePoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 5001);
 
-            
-
             while (true) {
                
                 //Получение данных через сокет 
