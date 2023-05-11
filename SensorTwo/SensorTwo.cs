@@ -15,7 +15,7 @@ namespace Sensor {
             using var UDPClient = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
             //Адресс данного устройства - внести в JSON
-            var localIP = new IPEndPoint(IPAddress.Parse("127.0.0.2"), 5003);
+            var localIP = new IPEndPoint(IPAddress.Parse("127.0.0.2"), 5002);
             SocketFlags SF = new SocketFlags();
 
             // начинаем прослушивание входящих сообщений
@@ -35,10 +35,12 @@ namespace Sensor {
 
                 string NMEAmes = Encoding.ASCII.GetString(datares);
                 Console.WriteLine(NMEAmes);
+                NMEAmes.Remove(0);
+                Array.Clear(datares);
 
-                using (StreamWriter fileStream = new StreamWriter("only.json", false)) {
-                    fileStream.Write(NMEAmes);
-                }
+                /* using (StreamWriter fileStream = new StreamWriter("only.json", false)) {
+                     fileStream.Write(NMEAmes);
+                 }*/
 
 
 

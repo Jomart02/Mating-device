@@ -64,18 +64,29 @@ namespace NavigationSystem {
             IPEndPoint endPoint = new IPEndPoint(IPAddress.Parse(IP_ADDRESS), port);
             try {
 
-                byte[] ByteProtocolMessage = Encoding.ASCII.GetBytes(PROTOCOL_MESSAGE);
-                byte[] ByteEthernetMessage = Encoding.ASCII.GetBytes(LAST_ETHERNET_MESSAGE);
-                byte[] ByteRSMessage = Encoding.ASCII.GetBytes(LAST_RS_MESSAGE);
-
+             
                 //Отправка на нужные источники и устройства 
-                int bytes = await UDP_CONTROLLER.SendToAsync(ByteProtocolMessage, endPoint);
-                await UDP_CONTROLLER.SendToAsync(ByteEthernetMessage, endPoint);
-                await UDP_CONTROLLER.SendToAsync(ByteRSMessage, endPoint);
+                byte[] ByteProtocolMessage = Encoding.ASCII.GetBytes(PROTOCOL_MESSAGE);
+                await Task.Run(() => UDP_CONTROLLER.SendToAsync(ByteProtocolMessage, endPoint));
+                Array.Clear(ByteProtocolMessage);
+                Thread.Sleep(20);
+
+                byte[] ByteEthernetMessage = Encoding.ASCII.GetBytes(LAST_ETHERNET_MESSAGE);
+                await Task.Run(() => UDP_CONTROLLER.SendToAsync(ByteEthernetMessage, endPoint));
+                Array.Clear(ByteEthernetMessage);
+                Thread.Sleep(20);
+
+                byte[] ByteRSMessage = Encoding.ASCII.GetBytes(LAST_RS_MESSAGE);
+                await Task.Run(() => UDP_CONTROLLER.SendToAsync(ByteRSMessage, endPoint));
+                Array.Clear(ByteRSMessage);
 
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("Отправлено: " + PROTOCOL_MESSAGE + "   " + bytes);
-                
+                Console.WriteLine("Отправлено: " + PROTOCOL_MESSAGE );
+
+                Array.Clear(ByteProtocolMessage);
+                Array.Clear(ByteEthernetMessage);
+                Array.Clear(ByteRSMessage);
+
             } catch (ArgumentOutOfRangeException ex) {
                 Console.WriteLine("Возникло исключение: " + ex.ToString() + "\n  " + ex.Message);
             } catch (Exception ex) {
@@ -93,11 +104,13 @@ namespace NavigationSystem {
                     string json = "{\"type\":\"protokol_message\"," + "\"client_name\":" + "\"CONTROLLER\","  + "\"message\":" + JsonConvert.SerializeObject(PROTOCOL_MESSAGE) + "," + "\"client_address\":" + JsonConvert.SerializeObject(Convert.ToString(END_POINT_CONTROLLER)) + ",\"date_time\":" + "\"" + DateTime.Now + "\"" + "}";
                     
                     byte[] ByteMessage = Encoding.ASCII.GetBytes(json);
-                    var bytes =UDP_CONTROLLER.SendTo(ByteMessage, END_POINT_INTERFACE);
+                    var bytes = await Task.Run(() => UDP_CONTROLLER.SendTo(ByteMessage, END_POINT_INTERFACE)) ;
                     
                     Console.ForegroundColor = ConsoleColor.Blue;
                     Console.WriteLine("Отправлено на интерфейс: " + PROTOCOL_MESSAGE + " " + bytes + "  |||  " + LAST_ETHERNET_MESSAGE );
+
                     Thread.Sleep(CONTROLLER.SLEEP_SEND_INTERFACE);
+                    Array.Clear(ByteMessage);
 
                 } catch (ArgumentOutOfRangeException ex) {
                     Console.WriteLine("Возникло исключение: " + ex.ToString() + "\n  " + ex.Message);
@@ -142,8 +155,8 @@ namespace NavigationSystem {
 
                             var json = "{\"type\":\"rs_info\"," + "\"name_device\":" + JsonConvert.SerializeObject(port) + ",\"COM_PORT\":" + JsonConvert.SerializeObject(COMPORT[port]) + ",\"valid\":" + JsonConvert.SerializeObject(1) + ",\"message\":" + JsonConvert.SerializeObject(LAST_RS_MESSAGE) + "}";
                             var ByteMessage = Encoding.ASCII.GetBytes(json);
-                            UDP_CONTROLLER.SendToAsync(ByteMessage, END_POINT_INTERFACE);
-
+                            UDP_CONTROLLER.SendTo(ByteMessage, END_POINT_INTERFACE);
+                            Array.Clear(ByteMessage);
                             //закрываем порт для работы без ошибок 
                             comport.Close();
                         }
@@ -172,8 +185,8 @@ namespace NavigationSystem {
 
                             var json = "{\"type\":\"rs_info\"," + "\"name_device\":" + JsonConvert.SerializeObject(port) + ",\"COM_PORT\":" + JsonConvert.SerializeObject(COMPORT[port]) + ",\"valid\":" + JsonConvert.SerializeObject(0) + ",\"message\":" + JsonConvert.SerializeObject(0) + "}";
                             var ByteMessage = Encoding.ASCII.GetBytes(json);
-                           // UDP_CONTROLLER.SendToAsync(ByteMessage, END_POINT_INTERFACE);
-
+                            // UDP_CONTROLLER.SendToAsync(ByteMessage, END_POINT_INTERFACE);
+                            Array.Clear(ByteMessage);
                             throw new System.IO.IOException(string.Format("{0} port was not found", COMPORT[port]));//Информация - что порт закрыт
                         } else {
                             SerialPort comport = new SerialPort(COMPORT[port]);
@@ -240,7 +253,9 @@ namespace NavigationSystem {
 
                     var result = await UDP_CONTROLLER.ReceiveFromAsync(ReceiveBytes, SocketFlags.None, END_POINT_CONTROLLER);
                     var Message = Encoding.ASCII.GetString(ReceiveBytes, 0, result.ReceivedBytes);
-                   
+                    //Message = string.Concat(Message.Where(x => !char.IsWhiteSpace(x)).ToArray() ) ;
+                    Message = string.Concat(Message.Where(x => !char.IsWhiteSpace(x)).ToArray() ) ;
+
                     if (result.RemoteEndPoint.ToString() == END_POINT_INTERFACE.ToString()) {
 
                         await Task.Run(() => SetCommand(Message,Device,patch , UDP_CONTROLLER));
@@ -256,10 +271,13 @@ namespace NavigationSystem {
                     
                     PROTOCOL_MESSAGE = MESSAGE.GetMessage(Message);
 
-                    string json = "{\"type\":\"last_message\"," + "\"client_name\":" + "\"" + code + "\"," + "\"message\":" + JsonConvert.SerializeObject(LAST_ETHERNET_MESSAGE) + "," + "\"client_address\":" + JsonConvert.SerializeObject(LAST_ETHERNET_POINT)  + ",\"date_time\":" +"\"" +  DateTime.Now + "\"" +  "}";
-
+                    string json = "{\"type\":\"last_message\"," + "\"client_name\":" + "\"" + code + "\"," + "\"message\":" + JsonConvert.SerializeObject(Message) + "," + "\"client_address\":" + JsonConvert.SerializeObject(LAST_ETHERNET_POINT)  + ",\"date_time\":" +"\"" +  DateTime.Now + "\"" +  "}";
+                    
                     byte[] ByteMessage = Encoding.ASCII.GetBytes(json);
-                    int bytes = await UDP_CONTROLLER.SendToAsync(ByteMessage, END_POINT_INTERFACE);
+                    string NMEAmes = Encoding.ASCII.GetString(ByteMessage);
+                    UDP_CONTROLLER.SendToAsync(ByteMessage, END_POINT_INTERFACE);
+
+                    Array.Clear(ByteMessage);
 
                 } catch (Exception ex) {   }
 
@@ -292,6 +310,7 @@ namespace NavigationSystem {
                         json = "{\"type\":\"clients_udp\"," + "\"clients_sensor\":" + JsonConvert.SerializeObject(device.IP_PORT_SENSOR) + ",\"clients_device\":" + JsonConvert.SerializeObject(device.IP_PORT_DEVICE) + "}" ;
                         ByteMessage = Encoding.ASCII.GetBytes(json);
                         await UDP_CONTROLLER.SendToAsync(ByteMessage, END_POINT_INTERFACE);
+
                     break;
 
                     case "get_rs_clients":
@@ -316,7 +335,7 @@ namespace NavigationSystem {
 
                     break;
                 }
-                
+                Array.Clear(ByteMessage);
                 File.WriteAllText(patch, JsonConvert.SerializeObject(device));
                 SetConfig(device);
 
