@@ -189,20 +189,20 @@ namespace NavigationSystem {
                         var isValid = SerialPort.GetPortNames().Any(x => string.Compare(x, COMPORT[port], true) == 0);
                         if (!isValid) {
 
-                           // var json = "{\"type\":\"rs_info\"," + "\"name_device\":" + JsonConvert.SerializeObject(port) + ",\"COM_PORT\":" + JsonConvert.SerializeObject(COMPORT[port]) + ",\"valid\":" + JsonConvert.SerializeObject(0) + ",\"message\":" + JsonConvert.SerializeObject(0) + "}";
-                            //var ByteMessage = Encoding.ASCII.GetBytes(json);
-                            //UDP_CONTROLLER.SendTo(ByteMessage, END_POINT_INTERFACE);
-                            //Array.Clear(ByteMessage);
+                             var json = "{\"type\":\"rs_info\"," + "\"name_device\":" + JsonConvert.SerializeObject(port) + ",\"COM_PORT\":" + JsonConvert.SerializeObject(COMPORT[port]) + ",\"valid\":" + JsonConvert.SerializeObject(0) + ",\"message\":" + JsonConvert.SerializeObject(0) + "}";
+                            var ByteMessage = Encoding.ASCII.GetBytes(json);
+                            UDP_CONTROLLER.SendTo(ByteMessage, END_POINT_INTERFACE);
+                            Array.Clear(ByteMessage);
                             //throw new System.IO.IOException(string.Format("{0} port was not found", COMPORT[port]));//Информация - что порт закрыт
+                            
                         } else {
+
                             SerialPort comport = new SerialPort(COMPORT[port]);
                             comport.Open();
-
+                            Console.WriteLine(COMPORT[port] + " Valid");
                             //передаем данные оконечномоу устройству 
-                            /*comport.WriteLine(PROTOCOL_MESSAGE);
-                            comport.WriteLine(LAST_ETHERNET_MESSAGE);*/
-                            comport.WriteLine(LAST_RS_MESSAGE);
-
+                            //comport.WriteLine(PROTOCOL_MESSAGE);
+                            if (LAST_ETHERNET_MESSAGE.Length >2 ) comport.WriteLine(LAST_ETHERNET_MESSAGE);
                             //закрываем порт для работы без ошибок 
                             comport.Close();
                         }
@@ -211,7 +211,7 @@ namespace NavigationSystem {
 
                 }
                 //Задержка на чтение и отправку 
-               Thread.Sleep(CONTROLLER.SLEEP_RS);
+                Thread.Sleep(CONTROLLER.SLEEP_RS);
             }
         }
 
