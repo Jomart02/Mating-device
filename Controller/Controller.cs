@@ -11,9 +11,10 @@ using Newtonsoft.Json;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using Newtonsoft.Json.Linq;
 using System.Text.Json.Nodes;
+using System.Diagnostics;
 
 namespace NavigationSystem {
-    internal class Controller {
+    public class Controller {
         //Стандартные параметры клиента контролерра 
         //Локальная сеть ИУС
         public string CODE = "JSON";
@@ -36,21 +37,21 @@ namespace NavigationSystem {
         public int SLEEP_RS { get; set; }
 
         [JsonIgnore]
-        private static string PROTOCOL_MESSAGE = "$MDRND,000000.00,000000,0000.0000,N,00000.0000,E,000.0,N,00.0,K,000.0*73"; //-стандартное сообщение 
+        public static string PROTOCOL_MESSAGE = "$MDRND,000000.00,000000,0000.0000,N,00000.0000,E,000.0,N,00.0,K,000.0*73"; //-стандартное сообщение 
         [JsonIgnore]
-        private static string LAST_ETHERNET_MESSAGE = "";
+        public static string LAST_ETHERNET_MESSAGE = "";
         [JsonIgnore]
-        private static string LAST_ETHERNET_POINT = "";
+        public static string LAST_ETHERNET_POINT = "";
         [JsonIgnore]
-        private static string LAST_RS_MESSAGE = "";
+        public static string LAST_RS_MESSAGE = "";
         [JsonIgnore]
-        private static ProtokolMessage MESSAGE = new ProtokolMessage();
+        public static ProtokolMessage MESSAGE = new ProtokolMessage();
         [JsonIgnore]
-        private static Controller CONTROLLER = new Controller();
+        public static Controller CONTROLLER = new Controller();
         [JsonIgnore]
-        private IPEndPoint END_POINT_INTERFACE;
+        public IPEndPoint END_POINT_INTERFACE;
         [JsonIgnore]
-        private IPEndPoint END_POINT_CONTROLLER;
+        public IPEndPoint END_POINT_CONTROLLER;
 
         #region Модуль отправки сообщений по Ethernet 
         /// <summary>
@@ -58,56 +59,61 @@ namespace NavigationSystem {
         /// </summary>
         /// <param name="port">Порт UDP оконечного устройства</param>
         /// <returns></returns>
-        internal async Task SendToReceiversAsync(int port , string IP_ADDRESS , Socket UDP_CONTROLLER) {
+        public async Task SendToReceiversAsync(int port , string IP_ADDRESS , Socket UDP_CONTROLLER) {
 
             // Создаем endPoint по информации об удаленном хосте девайсов
             IPEndPoint endPoint = new IPEndPoint(IPAddress.Parse(IP_ADDRESS), port);
             try {
+                int bytes = 0;
 
-             
                 //Отправка на нужные источники и устройства 
                 byte[] ByteProtocolMessage = Encoding.ASCII.GetBytes(PROTOCOL_MESSAGE);
-                await Task.Run(() => UDP_CONTROLLER.SendToAsync(ByteProtocolMessage, endPoint));
+                bytes += await Task.Run(() => UDP_CONTROLLER.SendToAsync(ByteProtocolMessage, endPoint));
                 Array.Clear(ByteProtocolMessage);
-                Thread.Sleep(20);
+                
 
-                byte[] ByteEthernetMessage = Encoding.ASCII.GetBytes(LAST_ETHERNET_MESSAGE);
-                await Task.Run(() => UDP_CONTROLLER.SendToAsync(ByteEthernetMessage, endPoint));
-                Array.Clear(ByteEthernetMessage);
-                Thread.Sleep(20);
+                
+                    byte[] ByteEthernetMessage = Encoding.ASCII.GetBytes(LAST_ETHERNET_MESSAGE);
+                    bytes +=  await Task.Run(() => UDP_CONTROLLER.SendToAsync(ByteEthernetMessage, endPoint));
+                    //Console.WriteLine($"Отправлено на адресс устройства {IP_ADDRESS}:{port}: {LAST_ETHERNET_MESSAGE} ");
+                    Array.Clear(ByteEthernetMessage);
+                
+                if (LAST_RS_MESSAGE.Length > 2) {
+                    byte[] ByteRSMessage = Encoding.ASCII.GetBytes(LAST_RS_MESSAGE);
+                    bytes +=  await Task.Run(() => UDP_CONTROLLER.SendToAsync(ByteRSMessage, endPoint));
+                //Console.WriteLine($"Отправлено на адресс устройства {IP_ADDRESS}:{port}: {LAST_RS_MESSAGE} ");
+                    Array.Clear(ByteRSMessage);
+                }
 
-                byte[] ByteRSMessage = Encoding.ASCII.GetBytes(LAST_RS_MESSAGE);
-                await Task.Run(() => UDP_CONTROLLER.SendToAsync(ByteRSMessage, endPoint));
-                Array.Clear(ByteRSMessage);
+                //Console.WriteLine($"Отправлено на адресс устройства {IP_ADDRESS}:{port}: {PROTOCOL_MESSAGE} . Всего переданно байт {bytes} ");
 
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("Отправлено: " + PROTOCOL_MESSAGE );
 
-                Array.Clear(ByteProtocolMessage);
-                Array.Clear(ByteEthernetMessage);
-                Array.Clear(ByteRSMessage);
 
             } catch (ArgumentOutOfRangeException ex) {
                 Console.WriteLine("Возникло исключение: " + ex.ToString() + "\n  " + ex.Message);
             } catch (Exception ex) {
                 Console.WriteLine("Возникло исключение: " + ex.ToString() + "\n  " + ex.Message);
             }
+            
         }
 
-        internal async Task SendToInterfaceAsync(IPEndPoint POINT_INTERFACE , int SLEEP , Socket UDP_CONTROLLER) {
-
+        public async Task SendToInterfaceAsync(IPEndPoint POINT_INTERFACE , int SLEEP , Socket UDP_CONTROLLER) {
+           
+           
             CONTROLLER.SLEEP_SEND_INTERFACE = SLEEP;
             END_POINT_INTERFACE = POINT_INTERFACE;
             while (true) {
                 try {
-
+                    
                     string json = "{\"type\":\"protokol_message\"," + "\"client_name\":" + "\"CONTROLLER\","  + "\"message\":" + JsonConvert.SerializeObject(PROTOCOL_MESSAGE) + "," + "\"client_address\":" + JsonConvert.SerializeObject(Convert.ToString(END_POINT_CONTROLLER)) + ",\"date_time\":" + "\"" + DateTime.Now + "\"" + "}";
                     
                     byte[] ByteMessage = Encoding.ASCII.GetBytes(json);
                     var bytes = await Task.Run(() => UDP_CONTROLLER.SendTo(ByteMessage, END_POINT_INTERFACE)) ;
+
+
                     
-                    Console.ForegroundColor = ConsoleColor.Blue;
-                    Console.WriteLine("Отправлено на интерфейс: " + PROTOCOL_MESSAGE + " " + bytes + "  |||  " + LAST_ETHERNET_MESSAGE );
+                    /*  Console.ForegroundColor = ConsoleColor.Blue;
+                      Console.WriteLine("Отправлено на интерфейс: " + PROTOCOL_MESSAGE + " " + bytes + "  |||  " + LAST_ETHERNET_MESSAGE );*/
 
                     Thread.Sleep(CONTROLLER.SLEEP_SEND_INTERFACE);
                     Array.Clear(ByteMessage);
@@ -123,53 +129,53 @@ namespace NavigationSystem {
 
         #region Модуль отправки и приема сообщений через COM порт
 
-        internal void ReceiverRS( Dictionary<string,string> COMPORT, int SLEEP, Socket UDP_CONTROLLER) {
+        public void ReceiverRS( Dictionary<string,string> COMPORT, Dictionary<string, string> COMPORT_IN, int SLEEP, Socket UDP_CONTROLLER) {
 
             CONTROLLER.SLEEP_RS = SLEEP;
 
             while (true) {
-
-                //Счетчик по каждому COM - порту
-                foreach (var port in COMPORT.Keys) {
-
-                    try {
+                try {
+                    //Счетчик по каждому COM - порту
+                    foreach (var port in COMPORT.Keys) {
                         //Проверка работоспособности выбранного порта
                         var isValid = SerialPort.GetPortNames().Any(x => string.Compare(x, COMPORT[port], true) == 0);
                         if (!isValid) {
 
                             var json = "{\"type\":\"rs_info\"," + "\"name_device\":" + JsonConvert.SerializeObject(port) + ",\"COM_PORT\":" + JsonConvert.SerializeObject(COMPORT[port]) + ",\"valid\":" + JsonConvert.SerializeObject(0) + ",\"message\":" + JsonConvert.SerializeObject(0) +  "}";
                             var ByteMessage = Encoding.ASCII.GetBytes(json);
-                      //      UDP_CONTROLLER.SendToAsync(ByteMessage, END_POINT_INTERFACE);
+                            UDP_CONTROLLER.SendTo(ByteMessage, END_POINT_INTERFACE);
 
-                            throw new System.IO.IOException(string.Format("{0} port was not found", COMPORT[port]));//Информация - что порт закрыт
+                            //throw new System.IO.IOException(string.Format("{0} port was not found", COMPORT[port]));//Информация - что порт закрыт
                         }else {
                             SerialPort comport = new SerialPort(COMPORT[port]);
                             comport.Open();
 
                             // Читаем данные из открытого порта 
                             string data1 = comport.ReadLine();
-                            Console.WriteLine(data1);
+                            //Console.WriteLine(data1);
                             //Формируем информационное сообщение и сохраняем пришедшие данные 
                             PROTOCOL_MESSAGE = MESSAGE.GetMessage(data1);
                             LAST_RS_MESSAGE = data1;
+                           
+                            Console.WriteLine($"Принято от устройства {port} порта {COMPORT[port]}: {data1}" );
 
                             var json = "{\"type\":\"rs_info\"," + "\"name_device\":" + JsonConvert.SerializeObject(port) + ",\"COM_PORT\":" + JsonConvert.SerializeObject(COMPORT[port]) + ",\"valid\":" + JsonConvert.SerializeObject(1) + ",\"message\":" + JsonConvert.SerializeObject(LAST_RS_MESSAGE) + "}";
                             var ByteMessage = Encoding.ASCII.GetBytes(json);
                             UDP_CONTROLLER.SendTo(ByteMessage, END_POINT_INTERFACE);
                             Array.Clear(ByteMessage);
                             //закрываем порт для работы без ошибок 
+                            
                             comport.Close();
                         }
 
-                    } catch (Exception ex) { Console.WriteLine(ex.Message); }
-
-                }
+                    }
+                } catch (Exception ex) { }
                 //Задержка на чтение и отправку 
                 Thread.Sleep(CONTROLLER.SLEEP_RS);
             }
         }
 
-        internal void SendToRS(Dictionary<string,string> COMPORT , int SLEEP, Socket UDP_CONTROLLER) {
+            public void SendToRS(Dictionary<string,string> COMPORT , int SLEEP, Socket UDP_CONTROLLER) {
 
             CONTROLLER.SLEEP_RS = SLEEP;
 
@@ -183,29 +189,29 @@ namespace NavigationSystem {
                         var isValid = SerialPort.GetPortNames().Any(x => string.Compare(x, COMPORT[port], true) == 0);
                         if (!isValid) {
 
-                            var json = "{\"type\":\"rs_info\"," + "\"name_device\":" + JsonConvert.SerializeObject(port) + ",\"COM_PORT\":" + JsonConvert.SerializeObject(COMPORT[port]) + ",\"valid\":" + JsonConvert.SerializeObject(0) + ",\"message\":" + JsonConvert.SerializeObject(0) + "}";
-                            var ByteMessage = Encoding.ASCII.GetBytes(json);
-                            // UDP_CONTROLLER.SendToAsync(ByteMessage, END_POINT_INTERFACE);
-                            Array.Clear(ByteMessage);
-                            throw new System.IO.IOException(string.Format("{0} port was not found", COMPORT[port]));//Информация - что порт закрыт
+                           // var json = "{\"type\":\"rs_info\"," + "\"name_device\":" + JsonConvert.SerializeObject(port) + ",\"COM_PORT\":" + JsonConvert.SerializeObject(COMPORT[port]) + ",\"valid\":" + JsonConvert.SerializeObject(0) + ",\"message\":" + JsonConvert.SerializeObject(0) + "}";
+                            //var ByteMessage = Encoding.ASCII.GetBytes(json);
+                            //UDP_CONTROLLER.SendTo(ByteMessage, END_POINT_INTERFACE);
+                            //Array.Clear(ByteMessage);
+                            //throw new System.IO.IOException(string.Format("{0} port was not found", COMPORT[port]));//Информация - что порт закрыт
                         } else {
                             SerialPort comport = new SerialPort(COMPORT[port]);
                             comport.Open();
 
                             //передаем данные оконечномоу устройству 
-                            comport.WriteLine(PROTOCOL_MESSAGE);
-                            comport.WriteLine(LAST_ETHERNET_MESSAGE);
+                            /*comport.WriteLine(PROTOCOL_MESSAGE);
+                            comport.WriteLine(LAST_ETHERNET_MESSAGE);*/
                             comport.WriteLine(LAST_RS_MESSAGE);
 
                             //закрываем порт для работы без ошибок 
                             comport.Close();
                         }
 
-                    } catch (Exception ex) { Console.WriteLine(ex.Message); }
+                    } catch (Exception ex) {  }
 
                 }
                 //Задержка на чтение и отправку 
-                Thread.Sleep(CONTROLLER.SLEEP_RS);
+               Thread.Sleep(CONTROLLER.SLEEP_RS);
             }
         }
 
@@ -213,8 +219,7 @@ namespace NavigationSystem {
 
         #region Модуль приема сообщений по Ethernet 
 
-        internal async Task ReceiverEthernetAsync(IPEndPoint LOCAL_IP, Socket UDP_CONTROLLER ) {
-
+        public async Task ReceiverEthernetAsync(IPEndPoint LOCAL_IP, Socket UDP_CONTROLLER ) {
 
             byte[] ReceiveBytes = new byte[2048];
             SocketFlags SF = new SocketFlags();
@@ -229,8 +234,8 @@ namespace NavigationSystem {
                     var result = await UDP_CONTROLLER.ReceiveFromAsync(ReceiveBytes, SocketFlags.None, RemoteIpEndPoint);
                     var Message = Encoding.ASCII.GetString(ReceiveBytes, 0, result.ReceivedBytes);
 
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Принято:  " + Message);
+                    /*Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Принято:  " + Message);*/
 
                     LAST_ETHERNET_MESSAGE = Message;
                     PROTOCOL_MESSAGE = MESSAGE.GetMessage(Message);
@@ -239,8 +244,8 @@ namespace NavigationSystem {
             }
         }
 
-        internal async Task ReceiverEthernetAsync(IPEndPoint LOCAL_IP, Socket UDP_CONTROLLER, string patch , Controller Device) {
-
+        public async Task ReceiverEthernetAsync(IPEndPoint LOCAL_IP, Socket UDP_CONTROLLER, string patch , Controller Device) {
+       
 
             byte[] ReceiveBytes = new byte[2048];
             SocketFlags SF = new SocketFlags();
@@ -249,6 +254,7 @@ namespace NavigationSystem {
             string code = "";
             Console.WriteLine("\n-----------Получение сообщений-----------");
             while (true) {
+              
                 try {
 
                     var result = await UDP_CONTROLLER.ReceiveFromAsync(ReceiveBytes, SocketFlags.None, END_POINT_CONTROLLER);
@@ -262,23 +268,22 @@ namespace NavigationSystem {
                         continue;
                     }
 
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Принято:  " + Message);
-
+                   //Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"Принято от устройства {result.RemoteEndPoint.ToString()}:{Message} ");
+                    PROTOCOL_MESSAGE = MESSAGE.GetMessage(Message);
                     LAST_ETHERNET_MESSAGE = Message;
                     LAST_ETHERNET_POINT = result.RemoteEndPoint.ToString();
                     code = GetKeyFromValue( LAST_ETHERNET_POINT , Device);
                     
-                    PROTOCOL_MESSAGE = MESSAGE.GetMessage(Message);
-
                     string json = "{\"type\":\"last_message\"," + "\"client_name\":" + "\"" + code + "\"," + "\"message\":" + JsonConvert.SerializeObject(Message) + "," + "\"client_address\":" + JsonConvert.SerializeObject(LAST_ETHERNET_POINT)  + ",\"date_time\":" +"\"" +  DateTime.Now + "\"" +  "}";
-                    
+
+
                     byte[] ByteMessage = Encoding.ASCII.GetBytes(json);
                     string NMEAmes = Encoding.ASCII.GetString(ByteMessage);
                     UDP_CONTROLLER.SendToAsync(ByteMessage, END_POINT_INTERFACE);
 
                     Array.Clear(ByteMessage);
-
+                  
                 } catch (Exception ex) {   }
 
             }
@@ -286,14 +291,14 @@ namespace NavigationSystem {
         #endregion
 
 
-        internal async Task SetCommand(string Message , Controller device, string patch, Socket UDP_CONTROLLER) {
+        public async Task SetCommand(string Message , Controller device, string patch, Socket UDP_CONTROLLER) {
 
             try {
                 using (StreamWriter fileStream = new StreamWriter("New.json", false)) {
                     fileStream.Write(Message);
                 }
 
-                Console.WriteLine(Message);
+                //Console.WriteLine(Message);
                 dynamic JsonFile = JsonConvert.DeserializeObject(File.ReadAllText("New.json"));
                 string com = Convert.ToString( JsonFile["type"]);
                 string json;
@@ -398,7 +403,7 @@ namespace NavigationSystem {
         /// Метод выставляет конфигурационные настройки для работы
         /// </summary>
         /// <param name="NewContr">Созданный объект класса Controller</param>
-        internal void SetConfig( Controller NewContr) {
+        public void SetConfig( Controller NewContr) {
             
             CONTROLLER = NewContr;
             END_POINT_INTERFACE = new IPEndPoint(IPAddress.Parse(CONTROLLER.IP_ADDRESS_INTERFACE), CONTROLLER.INTERFACE_PORT);

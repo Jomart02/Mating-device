@@ -1,1 +1,1 @@
-{"type":"set_frequency","device":"ethernet_device","frequency":20}
+{"type":"get_rs_clients"}

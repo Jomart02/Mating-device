@@ -2,10 +2,6 @@
 using System.Net;
 using System.Text;
 
-
-
-
-
 namespace Sensor {
     class SensorOne {
         static void Main(string[] args) {
