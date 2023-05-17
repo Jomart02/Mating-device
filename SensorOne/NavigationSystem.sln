@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33110.190
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtokolLibrary", "..\ProtokolLibraly\ProtokolLibrary.csproj", "{9BDF24A5-0E16-413C-826C-2918F10D1F15}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtocolLibrary", "..\ProtokolLibraly\ProtocolLibrary.csproj", "{9BDF24A5-0E16-413C-826C-2918F10D1F15}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controller", "..\Controller\Controller.csproj", "{3F889AEA-8B7A-4FB3-8483-8CADF61D0DC8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MatingDevice", "..\Controller\MatingDevice.csproj", "{3F889AEA-8B7A-4FB3-8483-8CADF61D0DC8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

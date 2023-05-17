@@ -99,13 +99,13 @@
           }
         }
       },
-      "ProtokolLibrary/1.0.0": {
+      "ProtocolLibrary/1.0.0": {
         "type": "project",
         "compile": {
-          "bin/placeholder/ProtokolLibrary.dll": {}
+          "bin/placeholder/ProtocolLibrary.dll": {}
         },
         "runtime": {
-          "bin/placeholder/ProtokolLibrary.dll": {}
+          "bin/placeholder/ProtocolLibrary.dll": {}
         }
       }
     }
@@ -271,16 +271,16 @@
         "useSharedDesignerContext.txt"
       ]
     },
-    "ProtokolLibrary/1.0.0": {
+    "ProtocolLibrary/1.0.0": {
       "type": "project",
-      "path": "../ProtokolLibraly/ProtokolLibrary.csproj",
-      "msbuildProject": "../ProtokolLibraly/ProtokolLibrary.csproj"
+      "path": "../ProtokolLibraly/ProtocolLibrary.csproj",
+      "msbuildProject": "../ProtokolLibraly/ProtocolLibrary.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net7.0": [
       "Newtonsoft.Json >= 13.0.3",
-      "ProtokolLibrary >= 1.0.0",
+      "ProtocolLibrary >= 1.0.0",
       "System.IO.Ports >= 7.0.0"
     ]
   },
@@ -290,9 +290,9 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\2022-2023\\EthernetNavigationSystem\\Controller\\Controller.csproj",
-      "projectName": "Controller",
-      "projectPath": "C:\\2022-2023\\EthernetNavigationSystem\\Controller\\Controller.csproj",
+      "projectUniqueName": "C:\\2022-2023\\EthernetNavigationSystem\\Controller\\MatingDevice.csproj",
+      "projectName": "MatingDevice",
+      "projectPath": "C:\\2022-2023\\EthernetNavigationSystem\\Controller\\MatingDevice.csproj",
       "packagesPath": "C:\\Users\\pc1\\.nuget\\packages\\",
       "outputPath": "C:\\2022-2023\\EthernetNavigationSystem\\Controller\\obj\\",
       "projectStyle": "PackageReference",
@@ -311,8 +311,8 @@
         "net7.0": {
           "targetAlias": "net7.0",
           "projectReferences": {
-            "C:\\2022-2023\\EthernetNavigationSystem\\ProtokolLibraly\\ProtokolLibrary.csproj": {
-              "projectPath": "C:\\2022-2023\\EthernetNavigationSystem\\ProtokolLibraly\\ProtokolLibrary.csproj"
+            "C:\\2022-2023\\EthernetNavigationSystem\\ProtokolLibraly\\ProtocolLibrary.csproj": {
+              "projectPath": "C:\\2022-2023\\EthernetNavigationSystem\\ProtokolLibraly\\ProtocolLibrary.csproj"
             }
           }
         }

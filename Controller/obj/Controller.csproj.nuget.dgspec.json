@@ -28,8 +28,8 @@
           "net7.0": {
             "targetAlias": "net7.0",
             "projectReferences": {
-              "C:\\2022-2023\\EthernetNavigationSystem\\ProtokolLibraly\\ProtokolLibrary.csproj": {
-                "projectPath": "C:\\2022-2023\\EthernetNavigationSystem\\ProtokolLibraly\\ProtokolLibrary.csproj"
+              "C:\\2022-2023\\EthernetNavigationSystem\\ProtokolLibraly\\ProtocolLibrary.csproj": {
+                "projectPath": "C:\\2022-2023\\EthernetNavigationSystem\\ProtokolLibraly\\ProtocolLibrary.csproj"
               }
             }
           }
@@ -73,11 +73,11 @@
         }
       }
     },
-    "C:\\2022-2023\\EthernetNavigationSystem\\ProtokolLibraly\\ProtokolLibrary.csproj": {
+    "C:\\2022-2023\\EthernetNavigationSystem\\ProtokolLibraly\\ProtocolLibrary.csproj": {
       "restore": {
-        "projectUniqueName": "C:\\2022-2023\\EthernetNavigationSystem\\ProtokolLibraly\\ProtokolLibrary.csproj",
-        "projectName": "ProtokolLibrary",
-        "projectPath": "C:\\2022-2023\\EthernetNavigationSystem\\ProtokolLibraly\\ProtokolLibrary.csproj",
+        "projectUniqueName": "C:\\2022-2023\\EthernetNavigationSystem\\ProtokolLibraly\\ProtocolLibrary.csproj",
+        "projectName": "ProtocolLibrary",
+        "projectPath": "C:\\2022-2023\\EthernetNavigationSystem\\ProtokolLibraly\\ProtocolLibrary.csproj",
         "frameworks": {
           "net47": {
             "projectReferences": {}

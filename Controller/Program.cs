@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using ProtokolLibrary;
+using ProtocolLibrary;
 using System.Diagnostics;
 using System.IO.Ports;
 using Newtonsoft.Json;
@@ -20,7 +20,7 @@ namespace NavigationSystem {
 
                 string patch = @"Config.json";
 
-                Controller DiplomDevice = JsonConvert.DeserializeObject<Controller>(File.ReadAllText(patch));
+                MatingDevice DiplomDevice = JsonConvert.DeserializeObject<MatingDevice>(File.ReadAllText(patch));
 
                 DiplomDevice.SetConfig(DiplomDevice);
 
