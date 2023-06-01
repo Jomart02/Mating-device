@@ -14,10 +14,10 @@
 ```
 @echo off
 echo Compiler...
-"dotnet" build "%cd%\Controller.csproj"
+"dotnet" build "%cd%\MatingDevice.csproj"
 
 echo Start...
-"dotnet" "%cd%\bin\Debug\net7.0\Controller.dll"
+"dotnet" "%cd%\bin\Release\net7.0\MatingDevice.dll"
 
 echo Done.
 pause
@@ -83,6 +83,7 @@ pause
 
 Выбор порта и отправка на все порты ведется автоматически
 
+Разработчик [Интерфейса](https://github.com/pandazz77/MatingDeviceUI) и [иммитаторов](https://github.com/pandazz77/MatingDeviceSubs)
 
 
 
