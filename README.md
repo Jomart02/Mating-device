@@ -83,6 +83,7 @@ pause
 
 Выбор порта и отправка на все порты ведется автоматически
 
+Разработчик [Интерфейса](https://github.com/pandazz77/MatingDeviceUI) и [иммитаторов](https://github.com/pandazz77/MatingDeviceSubs)
 
 
 
