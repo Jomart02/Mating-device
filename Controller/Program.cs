@@ -8,8 +8,6 @@ using Newtonsoft.Json;
 using System.Diagnostics;
 using System.Threading;
 
-
-
 namespace NavigationSystem {
 
     class Program {
@@ -18,7 +16,7 @@ namespace NavigationSystem {
 
             try {
 
-                string patch = @"Config.json";
+                string patch = @"C:\2022-2023\EthernetNavigationSystem\Controller\bin\Release\net7.0\Config.json";
 
                 MatingDevice DiplomDevice = JsonConvert.DeserializeObject<MatingDevice>(File.ReadAllText(patch));
 
@@ -26,9 +24,6 @@ namespace NavigationSystem {
 
                 IPEndPoint CONTROLLER_IP = new IPEndPoint(IPAddress.Parse(DiplomDevice.CONTROLLER_IP_ADDRESS), DiplomDevice.CONTROLLER_PORT);
                 IPEndPoint END_POINT_INTERFACE = new IPEndPoint(IPAddress.Parse(DiplomDevice.IP_ADDRESS_INTERFACE), DiplomDevice.INTERFACE_PORT);
-
-                /*string text = JsonConvert.SerializeObject(DiplomDevice);
-                File.WriteAllText(@"C:\2022-2023\EthernetNavigationSystem\Controller\Config.json", text); */
 
                 Socket UDP_CONTROLLER = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
                 UDP_CONTROLLER.Bind(CONTROLLER_IP);

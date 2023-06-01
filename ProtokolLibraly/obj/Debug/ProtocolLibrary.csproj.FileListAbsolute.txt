@@ -1,0 +1,6 @@
+C:\2022-2023\EthernetNavigationSystem\ProtokolLibraly\bin\Debug\ProtokolLibraly.dll
+C:\2022-2023\EthernetNavigationSystem\ProtokolLibraly\bin\Debug\ProtokolLibraly.pdb
+C:\2022-2023\EthernetNavigationSystem\ProtokolLibraly\obj\Debug\ProtocolLibrary.csproj.AssemblyReference.cache
+C:\2022-2023\EthernetNavigationSystem\ProtokolLibraly\obj\Debug\ProtocolLibrary.csproj.CoreCompileInputs.cache
+C:\2022-2023\EthernetNavigationSystem\ProtokolLibraly\obj\Debug\ProtokolLibraly.dll
+C:\2022-2023\EthernetNavigationSystem\ProtokolLibraly\obj\Debug\ProtokolLibraly.pdb

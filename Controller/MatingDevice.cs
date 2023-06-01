@@ -70,7 +70,7 @@ namespace NavigationSystem {
                 byte[] ByteProtocolMessage = Encoding.ASCII.GetBytes(PROTOCOL_MESSAGE);
                 bytes += await Task.Run(() => UDP_CONTROLLER.SendToAsync(ByteProtocolMessage, endPoint));
                 Array.Clear(ByteProtocolMessage);
-                
+                //Console.WriteLine($"Отправлено устройству на адрес {IP_ADDRESS}:{port}");
                 byte[] ByteEthernetMessage = Encoding.ASCII.GetBytes(LAST_ETHERNET_MESSAGE);
                 bytes +=  await Task.Run(() => UDP_CONTROLLER.SendToAsync(ByteEthernetMessage, endPoint));
                 //Console.WriteLine($"Отправлено на адресс устройства {IP_ADDRESS}:{port}: {LAST_ETHERNET_MESSAGE} ");
@@ -240,6 +240,7 @@ namespace NavigationSystem {
             END_POINT_CONTROLLER = LOCAL_IP;
             string code = "";
             Console.WriteLine("\n-----------Получение сообщений-----------");
+            
             while (true) {
               
                 try {
@@ -255,8 +256,8 @@ namespace NavigationSystem {
                         continue;
                     }
 
-                   //Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"Принято от устройства {result.RemoteEndPoint.ToString()}:{Message} ");
+                    //Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"Принято от устройства {result.RemoteEndPoint.ToString()} -> {Message} ");
                     PROTOCOL_MESSAGE = MESSAGE.GetMessage(Message);
                     LAST_ETHERNET_MESSAGE = Message;
                     LAST_ETHERNET_POINT = result.RemoteEndPoint.ToString();
@@ -264,7 +265,7 @@ namespace NavigationSystem {
                     
                     string json = "{\"type\":\"last_message\"," + "\"client_name\":" + "\"" + code + "\"," + "\"message\":" + JsonConvert.SerializeObject(Message) + "," + "\"client_address\":" + JsonConvert.SerializeObject(LAST_ETHERNET_POINT)  + ",\"date_time\":" +"\"" +  DateTime.Now + "\"" +  "}";
 
-
+                   
                     byte[] ByteMessage = Encoding.ASCII.GetBytes(json);
                     string NMEAmes = Encoding.ASCII.GetString(ByteMessage);
                     UDP_CONTROLLER.SendToAsync(ByteMessage, END_POINT_INTERFACE);

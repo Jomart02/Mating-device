@@ -25,3 +25,5 @@ C:\2022-2023\EthernetNavigationSystem\Controller\obj\Release\net7.0\refint\Matin
 C:\2022-2023\EthernetNavigationSystem\Controller\obj\Release\net7.0\MatingDevice.pdb
 C:\2022-2023\EthernetNavigationSystem\Controller\obj\Release\net7.0\MatingDevice.genruntimeconfig.cache
 C:\2022-2023\EthernetNavigationSystem\Controller\obj\Release\net7.0\ref\MatingDevice.dll
+C:\2022-2023\EthernetNavigationSystem\Controller\obj\Release\net7.0\Interop.Microsoft.Office.Interop.Word.dll
+C:\2022-2023\EthernetNavigationSystem\Controller\obj\Release\net7.0\MatingDevice.csproj.ResolveComReference.cache
