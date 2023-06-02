@@ -16,7 +16,7 @@ namespace NavigationSystem {
 
             try {
 
-                string patch = @"C:\2022-2023\EthernetNavigationSystem\Controller\bin\Release\net7.0\Config.json";
+                string patch = @"Config.json";
 
                 MatingDevice DiplomDevice = JsonConvert.DeserializeObject<MatingDevice>(File.ReadAllText(patch));
 

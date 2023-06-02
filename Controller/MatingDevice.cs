@@ -176,7 +176,9 @@ namespace NavigationSystem {
                         }
 
                     }
-                } catch (Exception ex) { }
+                } catch (Exception ex) {
+                    Console.WriteLine(ex.ToString());
+                }
                 //Задержка на чтение и отправку 
                 Thread.Sleep(CONTROLLER.SLEEP_RS);
             }
@@ -219,7 +221,9 @@ namespace NavigationSystem {
                             comport.Close();
                         }
 
-                    } catch (Exception ex) {  }
+                    } catch (Exception ex) {
+                        Console.WriteLine(ex.ToString());
+                    }
 
                 }
                 //Задержка на чтение и отправку 
@@ -240,19 +244,19 @@ namespace NavigationSystem {
             END_POINT_CONTROLLER = LOCAL_IP;
             string code = "";
             Console.WriteLine("\n-----------Получение сообщений-----------");
-            
+
             while (true) {
-              
+
                 try {
 
                     var result = await UDP_CONTROLLER.ReceiveFromAsync(ReceiveBytes, SocketFlags.None, END_POINT_CONTROLLER);
                     var Message = Encoding.ASCII.GetString(ReceiveBytes, 0, result.ReceivedBytes);
                     //Message = string.Concat(Message.Where(x => !char.IsWhiteSpace(x)).ToArray() ) ;
-                    Message = string.Concat(Message.Where(x => !char.IsWhiteSpace(x)).ToArray() ) ;
+                    Message = string.Concat(Message.Where(x => !char.IsWhiteSpace(x)).ToArray());
 
                     if (result.RemoteEndPoint.ToString() == END_POINT_INTERFACE.ToString()) {
 
-                        await Task.Run(() => SetCommand(Message,Device,patch , UDP_CONTROLLER));
+                        await Task.Run(() => SetCommand(Message, Device, patch, UDP_CONTROLLER));
                         continue;
                     }
 
@@ -261,18 +265,24 @@ namespace NavigationSystem {
                     PROTOCOL_MESSAGE = MESSAGE.GetMessage(Message);
                     LAST_ETHERNET_MESSAGE = Message;
                     LAST_ETHERNET_POINT = result.RemoteEndPoint.ToString();
-                    code = GetKeyFromValue( LAST_ETHERNET_POINT , Device);
-                    
-                    string json = "{\"type\":\"last_message\"," + "\"client_name\":" + "\"" + code + "\"," + "\"message\":" + JsonConvert.SerializeObject(Message) + "," + "\"client_address\":" + JsonConvert.SerializeObject(LAST_ETHERNET_POINT)  + ",\"date_time\":" +"\"" +  DateTime.Now + "\"" +  "}";
+                    code = GetKeyFromValue(LAST_ETHERNET_POINT, Device);
 
-                   
+                    string json = "{\"type\":\"last_message\"," + "\"client_name\":" + "\"" + code + "\"," + "\"message\":" + JsonConvert.SerializeObject(Message) + "," + "\"client_address\":" + JsonConvert.SerializeObject(LAST_ETHERNET_POINT) + ",\"date_time\":" + "\"" + DateTime.Now + "\"" + "}";
+
+
                     byte[] ByteMessage = Encoding.ASCII.GetBytes(json);
                     string NMEAmes = Encoding.ASCII.GetString(ByteMessage);
                     UDP_CONTROLLER.SendToAsync(ByteMessage, END_POINT_INTERFACE);
 
                     Array.Clear(ByteMessage);
-                  
-                } catch (Exception ex) {   }
+
+                } catch (SocketException soc) {
+
+                } catch (ArgumentOutOfRangeException arg ) {
+                    Console.WriteLine("Message Error"); 
+                } catch (Exception ex) {
+                    Console.WriteLine(ex.ToString());
+                }
 
             }
         }
