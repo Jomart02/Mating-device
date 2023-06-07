@@ -342,7 +342,11 @@ namespace NavigationSystem {
                     break;
 
                     case "remove_client":
-
+                        if (device.IP_PORT_DEVICE.ContainsKey(JsonFile["client_name"])) {
+                            device.IP_PORT_DEVICE.Remove(JsonFile["client_name"]);
+                        } else if (device.IP_PORT_SENSOR.ContainsKey(JsonFile["client_name"])) {
+                            device.IP_PORT_SENSOR.Remove(JsonFile["client_name"]);
+                        }
                     break;
                 }
                 Array.Clear(ByteMessage);

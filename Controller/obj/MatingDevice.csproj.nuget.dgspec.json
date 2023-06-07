@@ -27,7 +27,11 @@
         "frameworks": {
           "net7.0": {
             "targetAlias": "net7.0",
-            "projectReferences": {}
+            "projectReferences": {
+              "C:\\2022-2023\\EthernetNavigationSystem\\ProtokolLibraly\\ProtocolLibrary.csproj": {
+                "projectPath": "C:\\2022-2023\\EthernetNavigationSystem\\ProtokolLibraly\\ProtocolLibrary.csproj"
+              }
+            }
           }
         },
         "warningProperties": {
@@ -67,6 +71,21 @@
           },
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.100\\RuntimeIdentifierGraph.json"
         }
+      }
+    },
+    "C:\\2022-2023\\EthernetNavigationSystem\\ProtokolLibraly\\ProtocolLibrary.csproj": {
+      "restore": {
+        "projectUniqueName": "C:\\2022-2023\\EthernetNavigationSystem\\ProtokolLibraly\\ProtocolLibrary.csproj",
+        "projectName": "ProtocolLibrary",
+        "projectPath": "C:\\2022-2023\\EthernetNavigationSystem\\ProtokolLibraly\\ProtocolLibrary.csproj",
+        "frameworks": {
+          "net47": {
+            "projectReferences": {}
+          }
+        }
+      },
+      "frameworks": {
+        "net47": {}
       }
     }
   }

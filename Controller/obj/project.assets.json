@@ -98,6 +98,15 @@
             "rid": "win"
           }
         }
+      },
+      "ProtocolLibrary/1.0.0": {
+        "type": "project",
+        "compile": {
+          "bin/placeholder/ProtocolLibrary.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/ProtocolLibrary.dll": {}
+        }
       }
     }
   },
@@ -261,11 +270,17 @@
         "system.io.ports.nuspec",
         "useSharedDesignerContext.txt"
       ]
+    },
+    "ProtocolLibrary/1.0.0": {
+      "type": "project",
+      "path": "../ProtokolLibraly/ProtocolLibrary.csproj",
+      "msbuildProject": "../ProtokolLibraly/ProtocolLibrary.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net7.0": [
       "Newtonsoft.Json >= 13.0.3",
+      "ProtocolLibrary >= 1.0.0",
       "System.IO.Ports >= 7.0.0"
     ]
   },
@@ -295,7 +310,11 @@
       "frameworks": {
         "net7.0": {
           "targetAlias": "net7.0",
-          "projectReferences": {}
+          "projectReferences": {
+            "C:\\2022-2023\\EthernetNavigationSystem\\ProtokolLibraly\\ProtocolLibrary.csproj": {
+              "projectPath": "C:\\2022-2023\\EthernetNavigationSystem\\ProtokolLibraly\\ProtocolLibrary.csproj"
+            }
+          }
         }
       },
       "warningProperties": {
